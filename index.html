@@ -519,7 +519,7 @@
         
         // ========== COMANDOS EXPANDIDOS ==========
         
-        // ========== WHATSAPP PARA CELULAR (NOVO) ==========
+        // ========== WHATSAPP PARA CELULAR ==========
         if (cmd.includes("abrir whatsapp") || cmd.includes("whatsapp web") || (cmd.includes("whatsapp") && !cmd.includes("para"))) {
             const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
             
@@ -756,6 +756,60 @@
             else falar("Diga o que devo falar após 'fale'");
         }
         
+        // ========== CADEIA DE SUPRIMENTOS ==========
+        else if (cmd.includes("o que é cadeia de suprimentos") || 
+                 cmd.includes("cadeia de suprimentos") || 
+                 cmd.includes("supply chain") ||
+                 cmd.includes("o que é supply chain")) {
+            
+            const resposta = `Cadeia de suprimentos é o conjunto de todos os processos envolvidos na produção e distribuição de um produto ou serviço, desde a obtenção da matéria-prima até a entrega ao consumidor final.
+
+Os elos da cadeia são:
+1️⃣ Fornecedor - fornece matéria-prima ou componentes
+2️⃣ Produção - fabrica o produto
+3️⃣ Armazenagem - guarda o produto pronto
+4️⃣ Transporte - leva o produto até o cliente
+5️⃣ Cliente final - recebe o produto
+
+Diferença importante: Cadeia de Suprimentos é o todo (fornecedor até cliente). Logística é uma parte (transporte e armazenagem).
+
+O objetivo principal é: produto certo, no lugar certo, na hora certa, com o menor custo possível.`;
+            
+            falar(resposta);
+            return;
+        }
+        
+        // ========== SCMS (SISTEMA DE GESTÃO DE CADEIA DE SUPRIMENTOS) ==========
+        else if (cmd.includes("scms") || 
+                 cmd.includes("o que é scms") || 
+                 cmd.includes("sistema de gestão de cadeia de suprimentos") ||
+                 cmd.includes("supply chain management system")) {
+            
+            const resposta = `SCMS significa Sistema de Gestão de Cadeia de Suprimentos (Supply Chain Management System).
+
+É um sistema de software que integra e automatiza todos os processos da cadeia de suprimentos, incluindo:
+
+📊 PRINCIPAIS FUNÇÕES DO SCMS:
+1️⃣ Planejamento de demanda - prevê o que os clientes vão comprar
+2️⃣ Gestão de fornecedores - controla compras e contratos
+3️⃣ Controle de estoque - evita falta ou excesso de produtos
+4️⃣ Gestão de transporte - otimiza rotas e fretes
+5️⃣ Rastreamento de pedidos - acompanha do pedido à entrega
+6️⃣ Análise de desempenho - métricas e KPIs
+
+🎯 BENEFÍCIOS DO SCMS:
+✅ Redução de custos operacionais
+✅ Maior visibilidade da cadeia
+✅ Tomada de decisão baseada em dados
+✅ Redução de erros manuais
+✅ Melhora no atendimento ao cliente
+
+Exemplos de SCMS no mercado: SAP SCM, Oracle SCM, BlueYonder, Microsoft Dynamics 365 Supply Chain Management.`;
+            
+            falar(resposta);
+            return;
+        }
+        
         // Ajuda
         else if (cmd.includes("ajuda") || cmd.includes("comandos") || cmd.includes("o que você faz")) {
             const comandosLista = [
@@ -769,7 +823,9 @@
                 "🔍 pesquisar + assunto, notícias",
                 "📧 abrir youtube, google, gmail, spotify, netflix, github",
                 "📸 print, rolar para cima/baixo",
-                "❓ ajuda, tchau, obrigado"
+                "📦 o que é cadeia de suprimentos, supply chain",
+                "⚙️ o que é SCMS, sistema de gestão de cadeia de suprimentos",
+                "❓ ajuda, tchau, obrigado, quem te criou, como você está"
             ];
             falar(comandosLista.join(". "));
         }
@@ -827,7 +883,7 @@
     });
     
     helpBtn.addEventListener('click', () => {
-        falar("Comandos: hora, data, clima, pesquisar, tocar música, lembrete, whatsapp, piada, curiosidade, cara ou coroa, dado, abrir youtube, google, spotify, netflix, gmail, github, print, rolar, fale, tchau, obrigado, quem te criou, como você está. Diga JA ajuda para mais detalhes");
+        falar("Comandos: hora, data, clima, pesquisar, tocar música, lembrete, whatsapp, piada, curiosidade, cara ou coroa, dado, abrir youtube, google, spotify, netflix, gmail, github, print, rolar, fale, cadeia de suprimentos, SCMS, tchau, obrigado, quem te criou, como você está. Diga JA ajuda para mais detalhes");
     });
     
     whatsappBtn.addEventListener('click', () => {

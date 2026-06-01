@@ -433,13 +433,20 @@
     }
 
     function abrirWhatsApp(contato, mensagem) {
-        // Tenta abrir WhatsApp Web
+        const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
         const numero = contato.replace(/\D/g, '');
-        if (numero) {
-            window.open(`https://wa.me/55${numero}?text=${encodeURIComponent(mensagem)}`, '_blank');
-            falar(`Abrindo WhatsApp para o número ${contato}`);
+        
+        if (isMobile) {
+            if (numero) {
+                window.open(`https://wa.me/55${numero}?text=${encodeURIComponent(mensagem)}`, '_blank');
+                falar(`Abrindo WhatsApp para ${contato}`);
+            } else {
+                window.location.href = "whatsapp://";
+                falar("Abrindo WhatsApp");
+            }
         } else {
-            falar("Não consegui identificar o número");
+            window.open("https://web.whatsapp.com", "_blank");
+            falar("Abrindo WhatsApp Web");
         }
     }
 
@@ -512,9 +519,44 @@
         
         // ========== COMANDOS EXPANDIDOS ==========
         
-        // WhatsApp
-        if (cmd.includes("whatsapp") || cmd.includes("mensagem") || cmd.includes("zap")) {
-            falar("Fale a mensagem e depois 'para' e o contato. Exemplo: Oi tudo bem para Maria");
+        // ========== WHATSAPP PARA CELULAR (NOVO) ==========
+        if (cmd.includes("abrir whatsapp") || cmd.includes("whatsapp web") || (cmd.includes("whatsapp") && !cmd.includes("para"))) {
+            const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+            
+            if (isMobile) {
+                window.location.href = "whatsapp://";
+                falar("Abrindo WhatsApp");
+            } else {
+                window.open("https://web.whatsapp.com", "_blank");
+                falar("Abrindo WhatsApp Web");
+            }
+            return;
+        }
+        
+        // WhatsApp com mensagem
+        else if (cmd.includes("mensagem") || cmd.includes("zap") || cmd.includes("mandar") || cmd.includes("enviar") || cmd.includes("para")) {
+            if (cmd.includes("para")) {
+                const partes = cmd.split("para");
+                let mensagem = partes[0].replace("mandar", "").replace("mensagem", "").replace("whatsapp", "").replace("zap", "").replace("enviar", "").trim();
+                let contato = partes[1].trim();
+                if (mensagem === "") mensagem = "Olá!";
+                
+                const contatos = {
+                    "mãe": "5511999999999",
+                    "mae": "5511999999999",
+                    "pai": "5511888888888"
+                };
+                
+                let numero = contatos[contato.toLowerCase()];
+                if (numero) {
+                    window.open(`https://wa.me/${numero}?text=${encodeURIComponent(mensagem)}`, "_blank");
+                    falar(`Enviando para ${contato}`);
+                } else {
+                    falar(`Contato ${contato} não encontrado. Use: mãe ou pai`);
+                }
+                return;
+            }
+            falar("Diga a mensagem e depois 'para' e o contato. Exemplo: oi para mãe");
             aguardandoWhatsApp = true;
             statusSpan.innerText = "📱 Diga: mensagem para contato";
             return;
@@ -789,8 +831,14 @@
     });
     
     whatsappBtn.addEventListener('click', () => {
-        window.open("https://web.whatsapp.com", "_blank");
-        falar("Abrindo WhatsApp Web");
+        const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+        if (isMobile) {
+            window.location.href = "whatsapp://";
+            falar("Abrindo WhatsApp");
+        } else {
+            window.open("https://web.whatsapp.com", "_blank");
+            falar("Abrindo WhatsApp Web");
+        }
     });
     
     historyToggle.addEventListener('click', () => {

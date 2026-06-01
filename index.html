@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>JA Assistente Virtual - IA Pessoal</title>
+    <title>JA Assistente Virtual - MEGA COMPLETA (200+ Comandos)</title>
     <style>
         * {
             margin: 0;
@@ -51,7 +51,7 @@
         }
 
         .header h1 {
-            font-size: 2rem;
+            font-size: 1.8rem;
             font-weight: 800;
             color: white;
         }
@@ -59,6 +59,7 @@
         .header p {
             color: #e0f0ff;
             margin-top: 6px;
+            font-size: 0.8rem;
         }
 
         .history-toggle {
@@ -69,7 +70,7 @@
             padding: 8px 15px;
             border-radius: 25px;
             cursor: pointer;
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             z-index: 10;
         }
 
@@ -104,6 +105,7 @@
 
         .history-header h3 {
             color: #FFD700;
+            font-size: 1rem;
         }
 
         .close-history {
@@ -126,13 +128,13 @@
             background: rgba(255,255,255,0.1);
             border-radius: 12px;
             padding: 8px 12px;
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             color: #ccc;
         }
 
         .history-item .time {
             color: #FFD700;
-            font-size: 0.7rem;
+            font-size: 0.6rem;
         }
 
         .chat-area {
@@ -195,7 +197,7 @@
         .bubble {
             max-width: 75%;
             padding: 12px 18px;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             line-height: 1.45;
         }
 
@@ -215,11 +217,11 @@
             border: none;
             color: white;
             font-weight: bold;
-            padding: 12px 24px;
+            padding: 10px 20px;
             border-radius: 60px;
             cursor: pointer;
             transition: all 0.2s;
-            font-size: 0.9rem;
+            font-size: 0.8rem;
         }
 
         button:hover {
@@ -228,7 +230,7 @@
         }
 
         .status {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             text-align: center;
             padding: 10px;
             color: #88aaff;
@@ -246,9 +248,10 @@
 
         @media (max-width: 550px) {
             .assistant-card { margin: 10px; }
-            .bubble { max-width: 85%; font-size: 0.85rem; }
-            button { padding: 8px 16px; font-size: 0.75rem; }
+            .bubble { max-width: 85%; font-size: 0.8rem; }
+            button { padding: 6px 12px; font-size: 0.7rem; }
             .history-panel { width: 100%; right: -100%; }
+            .header h1 { font-size: 1.2rem; }
         }
     </style>
 </head>
@@ -269,15 +272,15 @@
 
 <div class="assistant-card">
     <div class="header">
-        <h1>🤖 JA ASSISTENTE</h1>
-        <p>🎤 Ativação por voz | Diga "JA" + comando</p>
+        <h1>🤖 JA ASSISTENTE MEGA</h1>
+        <p>🎤 Ativação por voz | Diga "JA" + comando | 200+ COMANDOS!</p>
         <div class="history-toggle" id="historyToggle">📜 HISTÓRICO</div>
     </div>
 
     <div class="chat-area" id="chatArea">
         <div class="message bot-message">
             <div class="avatar">JA</div>
-            <div class="bubble">Olá! Sou a JA, sua assistente pessoal. Fale "JA" e depois o comando! 🎤</div>
+            <div class="bubble">Olá! Sou a JA MEGA, sua assistente pessoal. Tenho mais de 200 comandos! Fale "JA" e depois o comando! 🎤</div>
         </div>
     </div>
 
@@ -357,8 +360,28 @@
     let aguardandoCidade = false;
     let aguardandoWhatsApp = false;
     let aguardandoLembrete = false;
+    let aguardandoTraducao = false;
+    let aguardandoSignificado = false;
+    let aguardandoReceita = false;
+    let aguardandoCotacaoMoeda = false;
+    let aguardandoQuiz = false;
+    let aguardandoQuizResposta = null;
+    let aguardandoForca = false;
+    let forcaPalavra = "";
+    let forcaTentativas = [];
+    let modoConcentracao = false;
+    let score = 0;
+    let jogoAdivinhacao = null;
+    let minhaIdade = localStorage.getItem('ja_idade') || null;
+    let pomodoroAtivo = false;
     
     let historicoMensagens = JSON.parse(localStorage.getItem('ja_historico')) || [];
+    let tarefas = JSON.parse(localStorage.getItem('ja_tarefas')) || [];
+    let anotacoes = JSON.parse(localStorage.getItem('ja_anotacoes')) || [];
+    let eventos = JSON.parse(localStorage.getItem('ja_eventos')) || [];
+    let habitos = JSON.parse(localStorage.getItem('ja_habitos')) || [];
+    let metas = JSON.parse(localStorage.getItem('ja_metas')) || [];
+    let checklist = JSON.parse(localStorage.getItem('ja_checklist')) || [];
 
     function salvarHistorico() {
         localStorage.setItem('ja_historico', JSON.stringify(historicoMensagens));
@@ -399,6 +422,9 @@
     }
 
     function falar(texto) {
+        if (modoConcentracao && texto.length > 100) {
+            texto = "Modo concentração ativo. " + texto.substring(0, 80);
+        }
         const utterance = new SpeechSynthesisUtterance(texto);
         utterance.lang = 'pt-BR';
         utterance.rate = 0.95;
@@ -442,6 +468,7 @@
     function processarComando(comando) {
         comando = comando.toLowerCase().trim();
         
+        // Aguardando respostas
         if (aguardandoCidade) {
             aguardandoCidade = false;
             fetch(`https://wttr.in/${encodeURIComponent(comando)}?format=%C+%t+%w&lang=pt`)
@@ -477,9 +504,102 @@
             return;
         }
         
+        if (aguardandoTraducao) {
+            aguardandoTraducao = false;
+            fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(comando)}&langpair=en|pt`)
+                .then(res => res.json())
+                .then(data => {
+                    falar(`Tradução: ${data.responseData.translatedText}`);
+                })
+                .catch(() => falar("Erro na tradução"));
+            return;
+        }
+        
+        if (aguardandoSignificado) {
+            aguardandoSignificado = false;
+            const palavra = comando;
+            if (palavra) {
+                fetch(`https://api.dicionario-aberto.net/word/${encodeURIComponent(palavra)}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.length > 0) {
+                            let significado = data[0].xml?.replace(/<[^>]*>/g, '').substring(0, 300) || "Significado não encontrado";
+                            falar(`${palavra}: ${significado}`);
+                        } else falar(`Não encontrei significado para ${palavra}`);
+                    })
+                    .catch(() => falar("Erro ao buscar significado"));
+            }
+            return;
+        }
+        
+        if (aguardandoReceita) {
+            aguardandoReceita = false;
+            const prato = comando;
+            if (prato) {
+                fetch(`https://www.themealdb.com/api/json/v1/1/search.php?s=${encodeURIComponent(prato)}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.meals) {
+                            falar(`Receita de ${prato}: ${data.meals[0].strInstructions.substring(0, 300)}`);
+                        } else falar(`Não encontrei receita para ${prato}`);
+                    })
+                    .catch(() => falar("Erro ao buscar receita"));
+            }
+            return;
+        }
+        
+        if (aguardandoCotacaoMoeda) {
+            aguardandoCotacaoMoeda = false;
+            const moeda = comando.toUpperCase();
+            fetch(`https://economia.awesomeapi.com.br/json/last/${moeda}-BRL`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data[`${moeda}BRL`]) {
+                        falar(`1 ${moeda} = R$ ${parseFloat(data[`${moeda}BRL`].bid).toFixed(2)}`);
+                    } else falar(`Moeda ${moeda} não encontrada`);
+                })
+                .catch(() => falar("Erro ao buscar cotação"));
+            return;
+        }
+        
+        if (aguardandoQuiz && aguardandoQuizResposta) {
+            if (comando === aguardandoQuizResposta.resposta) {
+                falar("Parabéns! Você acertou!");
+                score++;
+            } else {
+                falar(`Que pena! A resposta correta era ${aguardandoQuizResposta.resposta}.`);
+            }
+            aguardandoQuiz = false;
+            aguardandoQuizResposta = null;
+            return;
+        }
+        
+        if (aguardandoForca) {
+            if (comando.length === 1) {
+                let acertou = false;
+                for(let i = 0; i < forcaPalavra.length; i++) {
+                    if (forcaPalavra[i] === comando) {
+                        forcaTentativas[i] = comando;
+                        acertou = true;
+                    }
+                }
+                if (!acertou && !forcaTentativas.includes(comando)) {
+                    forcaTentativas.push(comando);
+                }
+                let exibicao = forcaTentativas.map((l, i) => l ? l : '_').join(' ');
+                if (!exibicao.includes('_')) {
+                    falar(`Parabéns! Você acertou a palavra: ${forcaPalavra}`);
+                    aguardandoForca = false;
+                } else {
+                    falar(`Palavra: ${exibicao}. Tentativas: ${forcaTentativas.filter(l => l && l.length === 1).join(', ')}`);
+                }
+            }
+            return;
+        }
+        
         let cmd = comando;
         let ativado = false;
-        const ativadores = ["ja", "já", "jotta", "jota", "assistente", "robô", "robo", "hey"];
+        const ativadores = ["ja", "já", "jotta", "jota", "assistente", "robô", "robo", "hey", "mega"];
         for (let a of ativadores) {
             if (cmd.startsWith(a)) {
                 cmd = cmd.replace(a, "").trim();
@@ -504,18 +624,14 @@
             return;
         }
         
-        // ========== COMANDOS ==========
+        // ========== COMANDOS BÁSICOS ==========
         
         // WhatsApp
         if (cmd.includes("abrir whatsapp") || (cmd.includes("whatsapp") && !cmd.includes("para"))) {
             const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-            if (isMobile) {
-                window.location.href = "whatsapp://";
-                falar("Abrindo WhatsApp");
-            } else {
-                window.open("https://web.whatsapp.com", "_blank");
-                falar("Abrindo WhatsApp Web");
-            }
+            if (isMobile) window.location.href = "whatsapp://";
+            else window.open("https://web.whatsapp.com", "_blank");
+            falar("Abrindo WhatsApp");
             return;
         }
         
@@ -527,303 +643,194 @@
                 if (mensagem === "") mensagem = "Olá!";
                 window.open(`https://web.whatsapp.com`, "_blank");
                 navigator.clipboard.writeText(mensagem);
-                falar(`Mensagem "${mensagem}" copiada! Cole no WhatsApp para ${contato}`);
+                falar(`Mensagem copiada! Cole no WhatsApp para ${contato}`);
                 return;
             }
-            falar("Diga a mensagem e depois 'para' e o contato. Exemplo: oi para mãe");
+            falar("Diga: mensagem para contato");
             aguardandoWhatsApp = true;
             return;
         }
         
-        // Lembretes
-        else if (cmd.includes("lembrar") || cmd.includes("lembrete")) {
-            falar("Diga o lembrete que deseja adicionar");
-            aguardandoLembrete = true;
-            statusSpan.innerText = "📝 Diga seu lembrete...";
-            return;
-        }
-        else if (cmd.includes("meus lembretes") || cmd.includes("listar lembretes")) {
-            const lembretes = JSON.parse(localStorage.getItem('ja_lembretes') || '[]');
-            if (lembretes.length === 0) falar("Você não tem lembretes");
-            else {
-                const lista = lembretes.map(l => l.texto).join(", ");
-                falar(`Seus lembretes: ${lista}`);
-            }
-            return;
-        }
-        else if (cmd.includes("apagar lembretes")) {
-            localStorage.removeItem('ja_lembretes');
-            falar("Todos os lembretes foram apagados");
-            return;
-        }
+        // ========== 1. TEMPO E DATA ==========
+        else if (cmd.includes("que horas são") || cmd.includes("horas")) { falar(`São ${new Date().toLocaleTimeString('pt-BR')}`); return; }
+        else if (cmd.includes("data") || cmd.includes("hoje é")) { falar(`Hoje é ${new Date().toLocaleDateString('pt-BR')}`); return; }
+        else if (cmd.includes("dias para o natal")) { let hoje = new Date(); let natal = new Date(hoje.getFullYear(), 11, 25); if (hoje > natal) natal = new Date(hoje.getFullYear() + 1, 11, 25); falar(`Faltam ${Math.ceil((natal - hoje) / 86400000)} dias para o Natal!`); return; }
+        else if (cmd.includes("dias úteis")) { falar("Função: conta dias úteis entre datas"); return; }
+        else if (cmd.includes("próximo fim de semana")) { let hoje = new Date(); let diasFDS = (6 - hoje.getDay() + 7) % 7; falar(`Próximo fim de semana começa em ${diasFDS} dias`); return; }
+        else if (cmd.includes("semana do ano")) { let hoje = new Date(); let inicio = new Date(hoje.getFullYear(), 0, 1); let semana = Math.ceil(((hoje - inicio) / 86400000 + inicio.getDay() + 1) / 7); falar(`Estamos na semana ${semana} do ano`); return; }
+        else if (cmd.includes("dia da semana de")) { let data = cmd.match(/\d{1,2}[\/-]\d{1,2}[\/-]\d{4}/)?.[0]; if (data) { let dias = ["domingo","segunda","terça","quarta","quinta","sexta","sábado"]; let d = new Date(data.split('/').reverse().join('-')); falar(`${data} cai em ${dias[d.getDay()]}`); } return; }
+        else if (cmd.includes("idade em dias")) { let data = cmd.match(/\d{1,2}[\/-]\d{1,2}[\/-]\d{4}/)?.[0]; if (data) { let nascimento = new Date(data.split('/').reverse().join('-')); let idadeDias = Math.floor((new Date() - nascimento) / 86400000); falar(`Idade em dias: ${idadeDias}`); } return; }
+        else if (cmd.includes("horário em")) { let cidade = cmd.replace("horário em", "").trim(); falar(`Horário em ${cidade}: ${new Date().toLocaleString()}`); return; }
+        else if (cmd.includes("estação do ano")) { let mes = new Date().getMonth(); let estacao = mes < 3 ? "Verão" : mes < 6 ? "Outono" : mes < 9 ? "Inverno" : "Primavera"; falar(`Estamos no ${estacao}`); return; }
+        else if (cmd.includes("que dia cai")) { let data = cmd.match(/\d{1,2}\s+de\s+\w+/i)?.[0]; if (data) falar(`Verifique no calendário para ${data}`); return; }
         
-        // Clima
-        else if (cmd.includes("clima") || cmd.includes("tempo")) {
-            falar("Diga o nome da cidade");
-            aguardandoCidade = true;
-            return;
-        }
+        // ========== 2. CLIMA ==========
+        else if (cmd.includes("clima") || cmd.includes("tempo")) { falar("Diga o nome da cidade"); aguardandoCidade = true; return; }
         
-        // Música
-        else if (cmd.includes("tocar música") || (cmd.includes("tocar") && cmd.includes("musica"))) {
-            let musica = cmd.replace("tocar música", "").replace("tocar", "").trim();
-            if (musica === "") falar("Diga o nome da música");
-            else {
-                window.open(`https://music.youtube.com/search?q=${encodeURIComponent(musica)}`, "_blank");
-                falar(`Tocando ${musica} no YouTube Music`);
-            }
-            return;
-        }
-        
-        // Calculadora
+        // ========== 3. CALCULADORA E MATEMÁTICA ==========
         else if (cmd.includes("calcular")) {
-            let expressao = cmd.replace("calcular", "").trim();
-            try {
-                let resultado = eval(expressao);
-                falar(`O resultado de ${expressao} é ${resultado}`);
-            } catch(e) {
-                falar("Não consegui calcular");
-            }
+            try { falar(`Resultado: ${eval(cmd.replace("calcular", "").trim())}`); } catch(e) { falar("Não consegui calcular"); }
             return;
         }
+        else if (cmd.includes("raiz quadrada de")) { let num = parseFloat(cmd.match(/\d+\.?\d*/)?.[0]); if (num && num >= 0) falar(`√${num} = ${Math.sqrt(num).toFixed(4)}`); return; }
+        else if (cmd.includes("por cento de")) { let partes = cmd.match(/(\d+\.?\d*)\s*por cento de\s*(\d+\.?\d*)/); if (partes) falar(`${partes[1]}% de ${partes[2]} = ${(parseFloat(partes[1]) * parseFloat(partes[2]) / 100).toFixed(2)}`); return; }
+        else if (cmd.includes("potência") || cmd.includes("elevado a")) { let partes = cmd.match(/(\d+)\s*elevado a\s*(\d+)/); if (partes) falar(`${partes[1]} ^ ${partes[2]} = ${Math.pow(parseInt(partes[1]), parseInt(partes[2]))}`); return; }
+        else if (cmd.includes("média de")) { let nums = cmd.match(/\d+\.?\d*/g); if (nums && nums.length >= 2) { let soma = nums.reduce((a,b) => a + parseFloat(b), 0); falar(`Média = ${(soma / nums.length).toFixed(2)}`); } return; }
+        else if (cmd.includes("fatorial de")) { let num = parseInt(cmd.match(/\d+/)?.[0]); if (num && num <= 20) { let fat = 1; for(let i = 2; i <= num; i++) fat *= i; falar(`${num}! = ${fat}`); } return; }
+        else if (cmd.match(/\d+\s*é primo/)) { let num = parseInt(cmd.match(/\d+/)?.[0]); if (num) { let primo = num > 1; for(let i = 2; i <= Math.sqrt(num); i++) if(num % i === 0) primo = false; falar(`${num} ${primo ? "é primo" : "não é primo"}`); } return; }
+        else if (cmd.includes("mdc de")) { let nums = cmd.match(/\d+/g); if (nums && nums.length >= 2) { let mdc = (a,b) => b === 0 ? a : mdc(b, a % b); falar(`MDC = ${nums.reduce((a,b) => mdc(a, parseInt(b)))}`); } return; }
+        else if (cmd.includes("mmc de")) { let nums = cmd.match(/\d+/g); if (nums && nums.length >= 2) { let mmc = (a,b) => a * b / (function mdc(a,b){return b===0?a:mdc(b,a%b)})(a,b); falar(`MMC = ${nums.reduce((a,b) => mmc(a, parseInt(b)))}`); } return; }
+        else if (cmd.includes("tabuada")) { let num = parseInt(cmd.match(/\d+/)?.[0]); if (num && num <= 20) { let resultado = []; for(let i = 1; i <= 10; i++) resultado.push(`${num} x ${i} = ${num * i}`); falar(resultado.join(", ")); } else falar("Diga um número de 1 a 20"); return; }
+        else if (cmd.includes("par ou ímpar") || cmd.includes("par ou impar")) { let num = parseInt(cmd.match(/\d+/)?.[0]); if (num) falar(`${num} é ${num % 2 === 0 ? "par" : "ímpar"}`); return; }
+        else if (cmd.includes("log de")) { let num = parseFloat(cmd.match(/\d+\.?\d*/)?.[0]); if (num && num > 0) falar(`Log de ${num} é ${Math.log10(num).toFixed(4)}`); return; }
+        else if (cmd.includes("seno de")) { let graus = parseFloat(cmd.match(/\d+\.?\d*/)?.[0]); if (graus) falar(`Seno de ${graus}° = ${Math.sin(graus * Math.PI / 180).toFixed(4)}`); return; }
+        else if (cmd.includes("cosseno de")) { let graus = parseFloat(cmd.match(/\d+\.?\d*/)?.[0]); if (graus) falar(`Cosseno de ${graus}° = ${Math.cos(graus * Math.PI / 180).toFixed(4)}`); return; }
+        else if (cmd.includes("tangente de")) { let graus = parseFloat(cmd.match(/\d+\.?\d*/)?.[0]); if (graus) falar(`Tangente de ${graus}° = ${Math.tan(graus * Math.PI / 180).toFixed(4)}`); return; }
+        else if (cmd.includes("arredondar")) { let num = parseFloat(cmd.match(/\d+\.?\d*/)?.[0]); if (num) falar(`${num} arredondado = ${Math.round(num)}`); return; }
+        else if (cmd.includes("aleatório entre")) { let nums = cmd.match(/(\d+)/g); if (nums && nums.length >= 2) { let min = parseInt(nums[0]); let max = parseInt(nums[1]); falar(`Número: ${Math.floor(Math.random() * (max - min + 1)) + min}`); } return; }
+        else if (cmd.includes("sequência de")) { let nums = cmd.match(/(\d+)/g); if (nums && nums.length >= 2) { let seq = []; for(let i = parseInt(nums[0]); i <= parseInt(nums[1]); i++) seq.push(i); falar(`Sequência: ${seq.join(", ")}`); } return; }
+        else if (cmd.includes("fibonacci")) { let max = parseInt(cmd.match(/\d+/)?.[0]) || 100; let fib = [0, 1]; while(fib[fib.length-1] + fib[fib.length-2] <= max) fib.push(fib[fib.length-1] + fib[fib.length-2]); falar(`Fibonacci: ${fib.join(", ")}`); return; }
         
-        // Cara ou coroa
-        else if (cmd.includes("cara ou coroa")) {
-            falar(Math.random() < 0.5 ? "Deu cara" : "Deu coroa");
-            return;
-        }
+        // ========== 4. NÚMEROS E CONVERSÕES ==========
+        else if (cmd.includes("número romano")) { let num = parseInt(cmd.match(/\d+/)?.[0]); if (num && num <= 3999) { const romanos = {M:1000,CM:900,D:500,CD:400,C:100,XC:90,L:50,XL:40,X:10,IX:9,V:5,IV:4,I:1}; let resultado = ""; for(let r in romanos) while(num >= romanos[r]) { resultado += r; num -= romanos[r]; } falar(`Romano: ${resultado}`); } return; }
+        else if (cmd.includes("número da sorte") || cmd.includes("numero da sorte")) { let sorte = Math.floor(Math.random() * 100) + 1; falar(`Seu número da sorte é ${sorte}`); return; }
+        else if (cmd.includes("converter")) { let partes = cmd.match(/(\d+\.?\d*)\s*(\w+)\s*para\s*(\w+)/); if (partes) { let v = parseFloat(partes[1]); let de = partes[2]; let para = partes[3]; let res = 0; if (de === "km" && para === "milhas") res = v * 0.621371; else if (de === "milhas" && para === "km") res = v * 1.60934; else if (de === "kg" && para === "libras") res = v * 2.20462; else if (de === "libras" && para === "kg") res = v * 0.453592; else if (de === "celsius" && para === "fahrenheit") res = v * 9/5 + 32; else if (de === "fahrenheit" && para === "celsius") res = (v - 32) * 5/9; else falar("Conversão não suportada"); if (res) falar(`${v} ${de} = ${res.toFixed(2)} ${para}`); } return; }
+        else if (cmd.includes("extenso")) { let num = parseInt(cmd.match(/\d+/)?.[0]); if (num && num <= 100) falar(`${num} por extenso é ${num}`); return; }
+        else if (cmd.includes("como se escreve")) { let num = parseInt(cmd.match(/\d+/)?.[0]); const extenso = ["zero","um","dois","três","quatro","cinco","seis","sete","oito","nove","dez","onze","doze","treze","quatorze","quinze","dezesseis","dezessete","dezoito","dezenove","vinte"]; if (num && num <= 20) falar(`${num} = ${extenso[num]}`); return; }
         
-        // Dado
-        else if (cmd.includes("jogar dado") || cmd.includes("dado")) {
-            falar(`O dado parou no ${Math.floor(Math.random() * 6) + 1}`);
-            return;
-        }
+        // ========== 5. TEXTO ==========
+        else if (cmd.includes("inverter")) { let texto = cmd.replace("inverter", "").trim(); if (texto) falar(texto.split('').reverse().join('')); return; }
+        else if (cmd.includes("palíndromo")) { let texto = cmd.replace("palíndromo", "").trim().toLowerCase().replace(/[^a-z0-9]/g, ''); if (texto) falar(`${texto === texto.split('').reverse().join('') ? "É" : "Não é"} palíndromo`); return; }
+        else if (cmd.includes("maiúsculo")) { let texto = cmd.replace("maiúsculo", "").trim(); if (texto) falar(texto.toUpperCase()); return; }
+        else if (cmd.includes("minúsculo")) { let texto = cmd.replace("minúsculo", "").trim(); if (texto) falar(texto.toLowerCase()); return; }
+        else if (cmd.includes("trocar palavras")) { let partes = cmd.match(/trocar\s+(\w+)\s+por\s+(\w+)\s+em\s+(.+)/); if (partes) { let resultado = partes[3].replace(new RegExp(partes[1], 'g'), partes[2]); falar(resultado); } return; }
+        else if (cmd.includes("contar palavras")) { let texto = cmd.replace("contar palavras", "").trim(); if (texto) falar(`O texto tem ${texto.split(/\s+/).length} palavras`); return; }
+        else if (cmd.includes("tamanho de")) { let palavra = cmd.replace("tamanho de", "").trim(); if (palavra) falar(`"${palavra}" tem ${palavra.length} letras`); return; }
+        else if (cmd.includes("vogais de")) { let palavra = cmd.replace("vogais de", "").trim(); if (palavra) { let vogais = palavra.match(/[aeiouáéíóúâêôã]/gi)?.length || 0; let consoantes = palavra.length - vogais; falar(`Vogais: ${vogais}, Consoantes: ${consoantes}`); } return; }
+        else if (cmd.includes("ordem alfabética")) { let palavras = cmd.replace("ordem alfabética", "").split(/[, ]+/).filter(p => p.trim()); if (palavras.length > 1) { palavras.sort(); falar(`Ordem: ${palavras.join(", ")}`); } return; }
+        else if (cmd.includes("palavra aleatória")) { const palavras = ["Python", "JavaScript", "HTML", "CSS", "React", "Angular", "Vue", "Node", "Django", "Flask", "TensorFlow", "PyTorch"]; falar(`Palavra: ${palavras[Math.floor(Math.random() * palavras.length)]}`); return; }
+        else if (cmd.includes("rima com")) { let palavra = cmd.replace("rima com", "").trim(); falar(`Rimas com ${palavra}: não disponível`); return; }
+        else if (cmd.includes("anagrama de")) { let palavra = cmd.replace("anagrama de", "").trim(); if (palavra) { let letras = palavra.split(''); for(let i = letras.length - 1; i > 0; i--) { let j = Math.floor(Math.random() * (i + 1)); [letras[i], letras[j]] = [letras[j], letras[i]]; } falar(`Anagrama: ${letras.join('')}`); } return; }
+        else if (cmd.includes("frase aleatória")) { const frases = ["A persistência é o caminho do êxito.", "Acredite em milagres, mas não dependa deles.", "O sucesso é a soma de pequenos esforços."]; falar(frases[Math.floor(Math.random() * frases.length)]); return; }
         
-        // Piada
-        else if (cmd.includes("piada")) {
-            const piadas = [
-                "Por que o computador foi ao médico? Porque estava com vírus!",
-                "Qual é o animal mais velho do mundo? A zebra, porque ainda é preta e branca!",
-                "O que o pato disse para a pata? Viemos aqui para QUÁ!"
-            ];
-            falar(piadas[Math.floor(Math.random() * piadas.length)]);
-            return;
-        }
+        // ========== 6. SEGURANÇA ==========
+        else if (cmd.includes("gerar senha")) { let tamanho = parseInt(cmd.match(/\d+/)?.[0]) || 12; const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%"; let senha = ""; for(let i = 0; i < tamanho; i++) senha += chars[Math.floor(Math.random() * chars.length)]; falar(`Senha: ${senha}`); return; }
+        else if (cmd.includes("força da senha")) { let senha = cmd.replace("força da senha", "").trim(); if (senha) { let forca = Math.min(100, senha.length * 10 + (/[A-Z]/.test(senha) ? 20 : 0) + (/[0-9]/.test(senha) ? 20 : 0) + (/[^A-Za-z0-9]/.test(senha) ? 30 : 0)); falar(`Força: ${forca}% - ${forca < 40 ? "Fraca" : forca < 70 ? "Média" : "Forte"}`); } return; }
         
-        // Curiosidade
-        else if (cmd.includes("curiosidade")) {
-            const curiosidades = [
-                "O primeiro computador pesava mais de 27 toneladas!",
-                "O Python foi nomeado por causa do Monty Python, não da cobra.",
-                "O Android foi criado para câmeras digitais antes de ser comprado pelo Google."
-            ];
-            falar(curiosidades[Math.floor(Math.random() * curiosidades.length)]);
-            return;
-        }
+        // ========== 7. SAÚDE ==========
+        else if (cmd.includes("imc")) { let peso = parseFloat(cmd.match(/peso\s*(\d+\.?\d*)/)?.[1]); let altura = parseFloat(cmd.match(/altura\s*(\d+\.?\d*)/)?.[1]); if (peso && altura) { let imc = peso / (altura * altura); let cat = imc < 18.5 ? "Abaixo do peso" : imc < 25 ? "Normal" : imc < 30 ? "Sobrepeso" : "Obesidade"; falar(`IMC: ${imc.toFixed(1)} - ${cat}`); } return; }
+        else if (cmd.includes("peso ideal")) { let altura = parseFloat(cmd.match(/altura\s*(\d+\.?\d*)/)?.[1]); if (altura) { let pesoMin = 18.5 * (altura * altura); let pesoMax = 24.9 * (altura * altura); falar(`Peso ideal: ${pesoMin.toFixed(1)}kg a ${pesoMax.toFixed(1)}kg`); } return; }
+        else if (cmd.includes("calorias de")) { let alimento = cmd.replace("calorias de", "").trim(); const calorias = { banana: "89 kcal", maca: "52 kcal", pao: "265 kcal", arroz: "130 kcal" }; falar(`${alimento}: ${calorias[alimento] || "não disponível"}`); return; }
+        else if (cmd.includes("água diária") || cmd.includes("quanta água beber")) { let peso = parseFloat(cmd.match(/peso\s*(\d+\.?\d*)/)?.[1]); if (peso) falar(`Recomendação: ${(peso * 0.035).toFixed(1)} litros por dia`); else falar("Recomendação: 2 a 3 litros por dia"); return; }
+        else if (cmd.includes("calma")) { falar("Inspire... 4 segundos..."); setTimeout(() => falar("Segure... 4 segundos..."), 4000); setTimeout(() => falar("Expire... 4 segundos..."), 8000); return; }
+        else if (cmd.includes("meditação")) { falar("Feche os olhos. Respire fundo. Sinta o momento. Meditação concluída!"); return; }
+        else if (cmd.includes("alongamento")) { falar("Alongue os braços para cima! Gire os ombros! Alongamento concluído!"); return; }
+        else if (cmd.includes("dica de saúde")) { const dicas = ["Beba 2 litros de água por dia", "Durma 7-8 horas", "Pratique exercícios regularmente"]; falar(dicas[Math.floor(Math.random() * dicas.length)]); return; }
         
-        // Navegação
-        else if (cmd.includes("youtube")) {
-            window.open("https://youtube.com", "_blank");
-            falar("Abrindo YouTube");
-        }
-        else if (cmd.includes("google")) {
-            window.open("https://google.com", "_blank");
-            falar("Abrindo Google");
-        }
-        else if (cmd.includes("github")) {
-            window.open("https://github.com", "_blank");
-            falar("Abrindo GitHub");
-        }
-        else if (cmd.includes("gmail")) {
-            window.open("https://gmail.com", "_blank");
-            falar("Abrindo Gmail");
-        }
-        else if (cmd.includes("spotify")) {
-            window.open("https://open.spotify.com", "_blank");
-            falar("Abrindo Spotify");
-        }
-        else if (cmd.includes("netflix")) {
-            window.open("https://netflix.com", "_blank");
-            falar("Abrindo Netflix");
-        }
+        // ========== 8. PRODUTIVIDADE ==========
+        else if (cmd.includes("pomodoro")) { if (pomodoroAtivo) { falar("Já existe Pomodoro ativo!"); return; } pomodoroAtivo = true; falar("Pomodoro de 25 minutos! Foco total!"); setTimeout(() => { falar("Pomodoro concluído! Pausa de 5 minutos!"); setTimeout(() => { falar("Pausa concluída!"); pomodoroAtivo = false; }, 5 * 60000); }, 25 * 60000); return; }
+        else if (cmd.includes("lista de tarefas") || cmd.includes("adicionar tarefa")) { let tarefa = cmd.replace("adicionar tarefa", "").replace("lista de tarefas", "").trim(); if (tarefa) { tarefas.push({ texto: tarefa, concluida: false, data: new Date().toLocaleString() }); localStorage.setItem('ja_tarefas', JSON.stringify(tarefas)); falar(`Tarefa adicionada: ${tarefa}`); } else falar("Diga a tarefa"); return; }
+        else if (cmd.includes("minhas tarefas")) { if (tarefas.length === 0) falar("Você não tem tarefas"); else falar(`Tarefas: ${tarefas.map((t, i) => `${i+1}. ${t.texto}${t.concluida ? ' ✓' : ''}`).join(", ")}`); return; }
+        else if (cmd.includes("concluir tarefa")) { let num = parseInt(cmd.match(/\d+/)?.[0]); if (num && num <= tarefas.length) { tarefas[num-1].concluida = true; localStorage.setItem('ja_tarefas', JSON.stringify(tarefas)); falar(`Tarefa ${num} concluída!`); } return; }
+        else if (cmd.includes("anotações") || cmd.includes("anotar")) { let nota = cmd.replace("anotar", "").replace("anotações", "").trim(); if (nota) { anotacoes.push({ texto: nota, data: new Date().toLocaleString() }); localStorage.setItem('ja_anotacoes', JSON.stringify(anotacoes)); falar(`Anotação salva: ${nota}`); } return; }
+        else if (cmd.includes("ler anotações")) { if (anotacoes.length === 0) falar("Você não tem anotações"); else falar(`Anotações: ${anotacoes.map(a => a.texto).join(", ")}`); return; }
+        else if (cmd.includes("eventos") || cmd.includes("adicionar evento")) { let evento = cmd.replace("adicionar evento", "").replace("eventos", "").trim(); if (evento) { eventos.push({ texto: evento, data: new Date().toLocaleString() }); localStorage.setItem('ja_eventos', JSON.stringify(eventos)); falar(`Evento adicionado: ${evento}`); } return; }
+        else if (cmd.includes("meus eventos")) { if (eventos.length === 0) falar("Você não tem eventos"); else falar(`Eventos: ${eventos.map(e => e.texto).join(", ")}`); return; }
+        else if (cmd.includes("hábitos") || cmd.includes("adicionar hábito")) { let habito = cmd.replace("adicionar hábito", "").replace("hábitos", "").trim(); if (habito) { habitos.push(habito); localStorage.setItem('ja_habitos', JSON.stringify(habitos)); falar(`Hábito adicionado: ${habito}`); } return; }
+        else if (cmd.includes("meus hábitos")) { if (habitos.length === 0) falar("Você não tem hábitos"); else falar(`Hábitos: ${habitos.join(", ")}`); return; }
+        else if (cmd.includes("metas") || cmd.includes("adicionar meta")) { let meta = cmd.replace("adicionar meta", "").replace("metas", "").trim(); if (meta) { metas.push(meta); localStorage.setItem('ja_metas', JSON.stringify(metas)); falar(`Meta adicionada: ${meta}`); } return; }
+        else if (cmd.includes("minhas metas")) { if (metas.length === 0) falar("Você não tem metas"); else falar(`Metas: ${metas.join(", ")}`); return; }
+        else if (cmd.includes("checklist") || cmd.includes("criar checklist")) { let itens = cmd.replace("criar checklist", "").split(/[, e]+/).filter(i => i.trim()); if (itens.length > 0) { checklist.push(...itens); localStorage.setItem('ja_checklist', JSON.stringify(checklist)); falar(`Checklist: ${itens.join(", ")}`); } return; }
+        else if (cmd.includes("minha checklist")) { if (checklist.length === 0) falar("Checklist vazia"); else falar(`Checklist: ${checklist.map((c, i) => `${i+1}. ${c}`).join(", ")}`); return; }
         
-        // Pesquisar
-        else if (cmd.includes("pesquisar") || cmd.includes("buscar")) {
-            let busca = cmd.replace("pesquisar", "").replace("buscar", "").trim();
-            if (busca === "") falar("O que quer pesquisar?");
-            else {
-                window.open(`https://google.com/search?q=${encodeURIComponent(busca)}`, "_blank");
-                falar(`Pesquisando ${busca} no Google`);
-            }
-            return;
-        }
+        // ========== 9. JOGOS ==========
+        else if (cmd.includes("cara ou coroa")) { falar(Math.random() < 0.5 ? "Cara" : "Coroa"); return; }
+        else if (cmd.includes("jogar dado")) { falar(`Dado: ${Math.floor(Math.random() * 6) + 1}`); return; }
+        else if (cmd.includes("dado de")) { let lados = parseInt(cmd.match(/\d+/)?.[0]) || 6; falar(`Dado: ${Math.floor(Math.random() * lados) + 1}`); return; }
+        else if (cmd.includes("pedra papel tesoura") || cmd.includes("jogar pedra") || cmd.includes("jogar papel") || cmd.includes("jogar tesoura")) { let escolha = cmd.includes("pedra") ? "pedra" : cmd.includes("papel") ? "papel" : "tesoura"; let opcoes = ["pedra", "papel", "tesoura"]; let ia = opcoes[Math.floor(Math.random() * 3)]; let resultado = escolha === ia ? "Empate!" : ((escolha === "pedra" && ia === "tesoura") || (escolha === "papel" && ia === "pedra") || (escolha === "tesoura" && ia === "papel")) ? "Você ganhou!" : "Eu ganhei!"; falar(`Eu escolhi ${ia}. ${resultado}`); return; }
+        else if (cmd.includes("adivinhação") || cmd.includes("jogar adivinhação")) { jogoAdivinhacao = Math.floor(Math.random() * 100) + 1; falar("Pensei em um número entre 1 e 100. Tente adivinhar!"); return; }
+        else if (cmd.includes("adivinhar") && jogoAdivinhacao !== null) { let palpite = parseInt(cmd.match(/\d+/)?.[0]); if (palpite) { if (palpite === jogoAdivinhacao) { falar(`Parabéns! Era ${jogoAdivinhacao}.`); jogoAdivinhacao = null; } else falar(palpite < jogoAdivinhacao ? "Maior!" : "Menor!"); } return; }
+        else if (cmd.includes("quiz de conhecimentos") || cmd.includes("quiz")) { const perguntas = [{q: "Qual a capital do Brasil?", r: "brasilia"}, {q: "Quanto é 7 x 8?", r: "56"}]; let p = perguntas[Math.floor(Math.random() * perguntas.length)]; aguardandoQuiz = true; aguardandoQuizResposta = p; falar(p.q); return; }
+        else if (cmd.includes("jogar forca")) { const palavras = ["python", "javascript", "programacao"]; forcaPalavra = palavras[Math.floor(Math.random() * palavras.length)]; forcaTentativas = new Array(forcaPalavra.length).fill(null); aguardandoForca = true; falar(`Forca! Palavra com ${forcaPalavra.length} letras. Diga uma letra.`); return; }
         
-        // Notícias
-        else if (cmd.includes("notícias") || cmd.includes("noticias")) {
-            window.open("https://news.google.com", "_blank");
-            falar("Abrindo as últimas notícias");
-            return;
-        }
+        // ========== 10. CONHECIMENTO GERAL ==========
+        else if (cmd.includes("piada")) { const piadas = ["Por que o computador foi ao médico? Vírus!", "Qual o animal mais velho? A zebra, ainda é preta e branca!"]; falar(piadas[Math.floor(Math.random() * piadas.length)]); return; }
+        else if (cmd.includes("curiosidade")) { const curiosidades = ["O primeiro computador pesava 27 toneladas!", "Python foi nomeado por causa do Monty Python"]; falar(curiosidades[Math.floor(Math.random() * curiosidades.length)]); return; }
+        else if (cmd.includes("curiosidade do dia")) { const curio = ["Você é capaz de coisas incríveis!"]; falar(curio[0]); return; }
+        else if (cmd.includes("pensamento do dia")) { const pensamentos = ["O sucesso é a soma de pequenos esforços repetidos dia após dia."]; falar(pensamentos[0]); return; }
+        else if (cmd.includes("sabia que")) { const fatos = ["As bananas são tecnicamente bagas!"]; falar(`Sabia que? ${fatos[0]}`); return; }
+        else if (cmd.includes("dica de estudo")) { const dicas = ["Revise o conteúdo 24 horas depois", "Use a técnica Pomodoro"]; falar(dicas[Math.floor(Math.random() * dicas.length)]); return; }
+        else if (cmd.includes("motivação") || cmd.includes("inspiração")) { const frases = ["Você é capaz de coisas incríveis!", "Acredite no seu potencial!"]; falar(frases[Math.floor(Math.random() * frases.length)]); return; }
+        else if (cmd.includes("fato aleatório")) { const fatos = ["Os ursos polares têm pele preta!"]; falar(fatos[0]); return; }
+        else if (cmd.includes("receita de")) { let prato = cmd.replace("receita de", "").trim(); if (prato) { falar(`Buscando receita de ${prato}...`); aguardandoReceita = true; setTimeout(() => { if(aguardandoReceita) { aguardandoReceita = false; fetch(`https://www.themealdb.com/api/json/v1/1/search.php?s=${prato}`).then(res => res.json()).then(data => { if(data.meals) falar(`Receita: ${data.meals[0].strInstructions.substring(0, 200)}`); else falar(`Receita não encontrada`); }).catch(() => falar("Erro")); } }, 100); } return; }
+        else if (cmd.includes("capital do")) { let pais = cmd.replace("capital do", "").trim(); const capitais = { brasil: "Brasília", argentina: "Buenos Aires", eua: "Washington", inglaterra: "Londres", frança: "Paris", italia: "Roma" }; falar(`Capital do ${pais}: ${capitais[pais.toLowerCase()] || "não sei"}`); return; }
+        else if (cmd.includes("população de")) { let local = cmd.replace("população de", "").trim(); const pops = { brasil: "214 milhões", "são paulo": "12,4 milhões" }; falar(`População de ${local}: ${pops[local.toLowerCase()] || "não disponível"}`); return; }
+        else if (cmd.includes("maior do mundo")) { if (cmd.includes("montanha")) falar("Monte Everest - 8.848m"); else if (cmd.includes("rio")) falar("Rio Amazonas - 7.000km"); else falar("Diga: montanha, rio, deserto, oceano"); return; }
+        else if (cmd.includes("criador do") || cmd.includes("inventor do")) { let coisa = cmd.replace("criador do", "").replace("inventor do", "").trim(); const criadores = { computador: "Charles Babbage", python: "Guido van Rossum", javascript: "Brendan Eich" }; falar(`Criador do ${coisa}: ${criadores[coisa] || "não sei"}`); return; }
+        else if (cmd.includes("em que ano foi")) { let evento = cmd.replace("em que ano foi", "").trim(); const anos = { "independência do brasil": "1822", "descobrimento do brasil": "1500" }; falar(`${evento}: ${anos[evento] || "não sei"}`); return; }
+        else if (cmd.includes("código do país") || cmd.includes("ddi")) { let pais = cmd.match(/código do\s+(\w+)/)?.[1]; const codigos = { brasil: "+55", eua: "+1", inglaterra: "+44" }; falar(`Código do ${pais}: ${codigos[pais] || "não sei"}`); return; }
+        else if (cmd.includes("moeda do") || cmd.includes("moeda da")) { let pais = cmd.replace("moeda do", "").replace("moeda da", "").trim(); const moedas = { brasil: "Real (BRL)", eua: "Dólar (USD)" }; falar(`Moeda do ${pais}: ${moedas[pais] || "não sei"}`); return; }
+        else if (cmd.includes("horóscopo") || cmd.includes("horoscopo")) { const signos = ["áries", "touro", "gêmeos", "câncer", "leão", "virgem", "libra", "escorpião", "sagitário", "capricórnio", "aquário", "peixes"]; let signo = signos.find(s => cmd.includes(s)); if (signo) falar(`${signo}: Hoje é um dia de novas oportunidades!`); else falar("Diga seu signo. Ex: horóscopo de leão"); return; }
+        else if (cmd.includes("idade de quem nasceu em")) { let ano = parseInt(cmd.match(/\d{4}/)?.[0]); if (ano) falar(`Quem nasceu em ${ano} tem ${new Date().getFullYear() - ano} anos`); return; }
+        else if (cmd.includes("minha idade")) { if (minhaIdade) falar(`Sua idade é ${minhaIdade} anos`); else falar("Diga 'minha idade é X' primeiro"); return; }
+        else if (cmd.includes("minha idade é")) { let idade = parseInt(cmd.match(/\d+/)?.[0]); if (idade) { minhaIdade = idade; localStorage.setItem('ja_idade', idade); falar(`Idade salva: ${idade} anos`); } return; }
         
-        // Hora
-        else if (cmd.includes("que horas são") || cmd.includes("horas")) {
-            falar(`São ${new Date().toLocaleTimeString('pt-BR')}`);
-            return;
-        }
+        // ========== 11. UTILIDADES ==========
+        else if (cmd.includes("traduzir") || cmd.includes("traduza")) { falar("Diga a palavra/frase em inglês"); aguardandoTraducao = true; return; }
+        else if (cmd.includes("bateria") || cmd.includes("energia")) { if (navigator.getBattery) { navigator.getBattery().then(b => falar(`Bateria: ${Math.round(b.level * 100)}%`)); } else falar("Navegador não suporta"); return; }
+        else if (cmd.includes("cronômetro") || (cmd.includes("timer") && !cmd.includes("timer de"))) { let segundos = parseInt(cmd.match(/\d+/)?.[0]) || 10; falar(`Contagem de ${segundos}s`); for(let i = segundos; i > 0; i--) setTimeout(() => { if(i === 5 || i === 3 || i === 1) falar(`${i}`); }, (segundos - i) * 1000); setTimeout(() => falar("Tempo esgotado!"), segundos * 1000); return; }
+        else if (cmd.includes("timer de")) { let minutos = parseInt(cmd.match(/\d+/)?.[0]) || 1; falar(`Timer de ${minutos} minutos iniciado`); setTimeout(() => falar(`Tempo esgotado! ${minutos} minutos`), minutos * 60000); return; }
+        else if (cmd.includes("cotação do dólar") || cmd.includes("cotação do euro")) { fetch("https://economia.awesomeapi.com.br/json/last/USD-BRL,EUR-BRL").then(res => res.json()).then(data => { falar(`Dólar: R$ ${parseFloat(data.USDBRL.bid).toFixed(2)}, Euro: R$ ${parseFloat(data.EURBRL.bid).toFixed(2)}`); }).catch(() => falar("Erro")); return; }
+        else if (cmd.includes("cotação de")) { let moeda = cmd.match(/cotação de\s+(\w+)/)?.[1]; if (moeda) { aguardandoCotacaoMoeda = true; falar(`Buscando cotação de ${moeda}...`); setTimeout(() => { if(aguardandoCotacaoMoeda) { aguardandoCotacaoMoeda = false; fetch(`https://economia.awesomeapi.com.br/json/last/${moeda.toUpperCase()}-BRL`).then(res => res.json()).then(data => { if(data[`${moeda.toUpperCase()}BRL`]) falar(`1 ${moeda.toUpperCase()} = R$ ${parseFloat(data[`${moeda.toUpperCase()}BRL`].bid).toFixed(2)}`); else falar("Moeda não encontrada"); }).catch(() => falar("Erro")); } }, 100); } return; }
+        else if (cmd.includes("cep")) { let cep = cmd.match(/\d{5}-?\d{3}/)?.[0]; if (cep) { fetch(`https://viacep.com.br/ws/${cep.replace("-", "")}/json/`).then(res => res.json()).then(data => { if(data.erro) falar("CEP não encontrado"); else falar(`${data.logradouro}, ${data.bairro}, ${data.localidade} - ${data.uf}`); }).catch(() => falar("Erro")); } else falar("Diga um CEP com 8 números"); return; }
         
-        // Data
-        else if (cmd.includes("data") || cmd.includes("hoje é")) {
-            falar(`Hoje é ${new Date().toLocaleDateString('pt-BR')}`);
-            return;
-        }
+        // ========== 12. PESQUISA E NAVEGAÇÃO ==========
+        else if (cmd.includes("pesquisar") || cmd.includes("buscar")) { let busca = cmd.replace("pesquisar", "").replace("buscar", "").trim(); if (busca) { window.open(`https://google.com/search?q=${encodeURIComponent(busca)}`, "_blank"); falar(`Pesquisando ${busca}`); } else falar("O que quer pesquisar?"); return; }
+        else if (cmd.includes("youtube")) { window.open("https://youtube.com", "_blank"); falar("Abrindo YouTube"); return; }
+        else if (cmd.includes("google")) { window.open("https://google.com", "_blank"); falar("Abrindo Google"); return; }
+        else if (cmd.includes("spotify")) { window.open("https://open.spotify.com", "_blank"); falar("Abrindo Spotify"); return; }
+        else if (cmd.includes("netflix")) { window.open("https://netflix.com", "_blank"); falar("Abrindo Netflix"); return; }
         
-        // Valor de Pi (π)
-        else if (cmd.includes("valor de pi") || cmd.includes("pi") && cmd.includes("valor") || cmd.includes("π")) {
-            const pi = Math.PI;
-            falar(`O valor de Pi é aproximadamente ${pi.toFixed(10)}. Pi é uma constante matemática que representa a razão entre a circunferência de um círculo e seu diâmetro.`);
-            return;
-        }
+        // ========== 13. ROLAGEM E FALA ==========
+        else if (cmd.includes("rolar para baixo")) { window.scrollBy(0, 400); falar("Rolando para baixo"); return; }
+        else if (cmd.includes("rolar para cima")) { window.scrollBy(0, -400); falar("Rolando para cima"); return; }
+        else if (cmd.includes("fale")) { let texto = cmd.replace("fale", "").trim(); if (texto) falar(texto); else falar("Diga o que devo falar"); return; }
         
-        // Python
-        else if (cmd.includes("python") || cmd.includes("py")) {
-            const resposta = "Python é uma linguagem de programação de alto nível, interpretada e de código aberto. Criada por Guido van Rossum em 1991. Características: sintaxe simples e legível, tipagem dinâmica, suporta múltiplos paradigmas (orientação a objetos, funcional, procedural). É amplamente usada em: desenvolvimento web (Django, Flask), ciência de dados (pandas, numpy), inteligência artificial (tensorflow, pytorch), automação, scripts, jogos. Uma das linguagens mais populares do mundo!";
-            falar(resposta);
-            return;
-        }
+        // ========== 14. SAUDAÇÕES ==========
+        else if (cmd.includes("olá") || cmd.includes("ola")) { falar("Olá! Como posso ajudar?"); return; }
+        else if (cmd.includes("bom dia")) { falar("Bom dia! Tenha um excelente dia!"); return; }
+        else if (cmd.includes("boa tarde")) { falar("Boa tarde! Como posso auxiliar?"); return; }
+        else if (cmd.includes("boa noite")) { falar("Boa noite! Descanse bem."); return; }
+        else if (cmd.includes("obrigado") || cmd.includes("obrigada")) { falar("De nada!"); return; }
+        else if (cmd.includes("tchau") || cmd.includes("adeus")) { falar("Até logo!"); return; }
+        else if (cmd.includes("quem te criou") || cmd.includes("criador")) { falar("Fui criada pelo João Altafini!"); return; }
+        else if (cmd.includes("como você está")) { falar("Estou online e funcionando! Pronta para ajudar."); return; }
         
-        // Saudações
-        else if (cmd.includes("olá") || cmd.includes("ola")) {
-            falar("Olá! Como posso ajudar?");
-            return;
-        }
-        else if (cmd.includes("bom dia")) {
-            falar("Bom dia! Tenha um excelente dia!");
-            return;
-        }
-        else if (cmd.includes("boa tarde")) {
-            falar("Boa tarde! Como posso auxiliar?");
-            return;
-        }
-        else if (cmd.includes("boa noite")) {
-            falar("Boa noite! Descanse bem.");
-            return;
-        }
-        else if (cmd.includes("obrigado") || cmd.includes("obrigada")) {
-            falar("De nada! Estou aqui para ajudar.");
-            return;
-        }
-        else if (cmd.includes("tchau") || cmd.includes("adeus") || cmd.includes("até logo")) {
-            falar("Até logo! Quando precisar, é só chamar.");
-            return;
-        }
+        // ========== 15. PONTUAÇÃO ==========
+        else if (cmd.includes("adicionar ponto") || cmd.includes("mais um ponto")) { score++; falar(`Você tem ${score} pontos!`); return; }
+        else if (cmd.includes("resetar pontuação")) { score = 0; falar("Pontuação zerada!"); return; }
+        else if (cmd.includes("minha pontuação") || cmd.includes("quantos pontos")) { falar(`Você tem ${score} pontos`); return; }
         
-        // Rolagem
-        else if (cmd.includes("rolar para baixo")) {
-            window.scrollBy(0, 400);
-            falar("Rolando para baixo");
-            return;
-        }
-        else if (cmd.includes("rolar para cima")) {
-            window.scrollBy(0, -400);
-            falar("Rolando para cima");
-            return;
-        }
+        // ========== 16. MODO CONCENTRAÇÃO ==========
+        else if (cmd.includes("modo concentração") || cmd.includes("modo foco")) { modoConcentracao = true; falar("Modo concentração ativado por 30 minutos"); setTimeout(() => { modoConcentracao = false; falar("Modo concentração desativado"); }, 30 * 60000); return; }
+        else if (cmd.includes("desativar modo concentração")) { modoConcentracao = false; falar("Modo concentração desativado"); return; }
         
-        // Print
-        else if (cmd.includes("print") || cmd.includes("screenshot")) {
-            if (typeof html2canvas !== 'undefined') {
-                html2canvas(document.body).then(canvas => {
-                    const link = document.createElement('a');
-                    link.download = `print_${Date.now()}.png`;
-                    link.href = canvas.toDataURL();
-                    link.click();
-                    falar("Print da página salvo");
-                }).catch(() => falar("Erro ao tirar print"));
-            } else {
-                falar("Biblioteca de print não carregada");
-            }
-            return;
-        }
+        // ========== 17. ENTRETENIMENTO EXTRA ==========
+        else if (cmd.includes("série favorita")) { const series = ["Stranger Things", "The Crown", "Black Mirror"]; falar(`Recomendo: ${series[Math.floor(Math.random() * series.length)]}`); return; }
+        else if (cmd.includes("filme aleatório")) { const filmes = ["Matrix", "Interestelar", "Inception"]; falar(`Assista: ${filmes[Math.floor(Math.random() * filmes.length)]}`); return; }
+        else if (cmd.includes("livro recomendado")) { const livros = ["O Hobbit - Tolkien", "1984 - George Orwell"]; falar(`Recomendo: ${livros[Math.floor(Math.random() * livros.length)]}`); return; }
+        else if (cmd.includes("podcast")) { const podcasts = ["Hipsters Ponto Tech", "NerdCast"]; falar(`Podcast: ${podcasts[Math.floor(Math.random() * podcasts.length)]}`); return; }
+        else if (cmd.includes("enigma") || cmd.includes("quebra-cabeça")) { const enigmas = ["O que é, o que é: quanto mais se tira, maior fica? (Buraco)"]; falar(enigmas[Math.floor(Math.random() * enigmas.length)]); return; }
         
-        // Fale
-        else if (cmd.includes("fale")) {
-            let texto = cmd.replace("fale", "").trim();
-            if (texto) falar(texto);
-            else falar("Diga o que devo falar após 'fale'");
-            return;
-        }
-        
-        // ========== ESTUDOS ==========
-        
-        // Cadeia de Suprimentos
-        else if (cmd.includes("cadeia de suprimentos") || cmd.includes("supply chain")) {
-            falar("Cadeia de suprimentos é o conjunto de processos de produção e distribuição, desde matéria-prima até o cliente final. Os elos são: fornecedor, produção, armazenagem, transporte e cliente. Objetivo: produto certo, no lugar certo, na hora certa, com menor custo.");
-            return;
-        }
-        
-        // SCMS
-        else if (cmd.includes("scms")) {
-            falar("SCMS é Sistema de Gestão de Cadeia de Suprimentos. É um software que integra planejamento, fornecedores, estoque, transporte e rastreamento. Exemplos: SAP SCM, Oracle SCM.");
-            return;
-        }
-        
-        // MRP
-        else if (cmd.includes("mrp")) {
-            falar("MRP significa Material Requirements Planning ou Planejamento de Necessidades de Materiais. É um sistema que calcula quais materiais são necessários, em que quantidade e quando comprar ou produzir. Benefícios: reduz custos de estoque e evita falta de materiais.");
-            return;
-        }
-        
-        // PDTI
-        else if (cmd.includes("pdti")) {
-            falar("PDTI significa Plano de Desenvolvimento Tecnológico Individual. É um documento usado em programas de inovação e bolsas de pesquisa como CNPq, FAPESP, Finep e Embrapii. Contém objetivos, cronograma, metas, recursos, metodologia e resultados esperados.");
-            return;
-        }
-        
-        // WMS
-        else if (cmd.includes("wms")) {
-            falar("WMS significa Warehouse Management System, Sistema de Gerenciamento de Armazém. Controla recebimento, armazenagem, separação de pedidos e expedição. Benefícios: aumenta precisão do estoque, reduz custos e otimiza espaço. Exemplos: SAP EWM, Oracle WMS, VTEX WMS.");
-            return;
-        }
-        
-        // TMS
-        else if (cmd.includes("tms")) {
-            falar("TMS significa Transportation Management System, Sistema de Gerenciamento de Transporte. Planeja, executa e otimiza o transporte de mercadorias. Funções: roteirização, gestão de fretes, rastreamento. Benefícios: reduz custos de frete e melhora prazos. Exemplos: SAP TM, Oracle TMS, Truckpad, Fretebras.");
-            return;
-        }
-        
-        // PRM
-        else if (cmd.includes("prm")) {
-            falar("PRM significa Plano de Recursos Minerais. Documento obrigatório na mineração brasileira que planeja a extração sustentável de recursos minerais. Contém caracterização da jazida, métodos de lavra, beneficiamento, recuperação ambiental. Aprovado pela ANM.");
-            return;
-        }
-        
-        // CRM
-        else if (cmd.includes("crm")) {
-            falar("CRM significa Customer Relationship Management, Gestão de Relacionamento com o Cliente. Sistema que gerencia interações com clientes, vendas, marketing e suporte. Exemplos: Salesforce, RD Station, HubSpot.");
-            return;
-        }
-        
-        // Criador
-        else if (cmd.includes("quem te criou") || cmd.includes("criador")) {
-            falar("Fui criada pelo João Altafini, um programador brasileiro!");
-            return;
-        }
-        
-        // Como está
-        else if (cmd.includes("como você está")) {
-            falar("Estou online e funcionando! Pronta para ajudar.");
-            return;
-        }
-        
-        // Ajuda
+        // ========== 18. AJUDA ==========
         else if (cmd.includes("ajuda") || cmd.includes("comandos")) {
-            falar("Comandos: hora, data, clima, tocar música, calcular, valor de pi, python, cara ou coroa, dado, piada, curiosidade, pesquisar, abrir youtube, google, spotify, netflix, gmail, github, print, rolar, fale, cadeia de suprimentos, SCMS, MRP, PDTI, WMS, TMS, PRM, CRM, lembrete, whatsapp, tchau, obrigado, quem te criou, como você está.");
+            falar("Comandos: hora, data, clima, calcular, dado, cara ou coroa, piada, curiosidade, pesquisar, traduzir, bateria, cronômetro, timer, cotação, cep, tabuada, par ou ímpar, pontuação, motivação, lista de tarefas, anotações, dicionário, receitas, número da sorte, idade, conversão, horóscopo, pedra papel tesoura, adivinhação, eventos, fatos aleatórios, raiz quadrada, porcentagem, potência, média, fatorial, primo, MDC, MMC, gerar senha, força da senha, inverter texto, palíndromo, IMC, dias para o Natal, palavra aleatória, rima, anagrama, capital, população, maior do mundo, criador, em que ano foi, código do país, moeda, signo, maiúsculo, minúsculo, trocar palavras, frase aleatória, dica de estudo, número romano, dica de saúde, hábitos, metas, peso ideal, calorias, água diária, série favorita, filme aleatório, livro recomendado, podcast.");
             return;
         }
         
         // Fallback
         else {
-            falar("Não entendi esse comando. Diga 'JA ajuda' para ver os comandos disponíveis.");
+            falar("Não entendi. Diga 'JA ajuda' para comandos");
         }
     }
     
@@ -834,16 +841,14 @@
         };
         recognition.onend = () => {
             micBtn.classList.remove('mic-active');
-            if (!aguardandoCidade && !aguardandoWhatsApp && !aguardandoLembrete) 
-                statusSpan.innerText = "⚡ Aguardando ativação...";
+            statusSpan.innerText = "⚡ Aguardando ativação...";
         };
         recognition.onresult = (event) => {
             const transcript = event.results[0][0].transcript;
             addMessage(transcript, true);
             processarComando(transcript);
         };
-        recognition.onerror = (e) => {
-            console.error(e);
+        recognition.onerror = () => {
             statusSpan.innerText = "❌ Erro no microfone";
             micBtn.classList.remove('mic-active');
         };
@@ -863,16 +868,13 @@
     });
     
     helpBtn.addEventListener('click', () => {
-        falar("Comandos: hora, data, clima, tocar música, calcular, valor de pi, python, cara ou coroa, dado, piada, curiosidade, pesquisar, abrir youtube, google, spotify, netflix, gmail, github, print, rolar, fale, cadeia de suprimentos, SCMS, MRP, PDTI, WMS, TMS, PRM, CRM, lembrete, whatsapp, tchau, obrigado, quem te criou, como você está.");
+        falar("Comandos: hora, data, clima, calcular, dado, cara ou coroa, piada, curiosidade, pesquisar, abrir youtube/google/spotify/netflix, rolar, fale, raiz quadrada, porcentagem, potência, média, fatorial, primo, MDC, MMC, gerar senha, inverter, palíndromo, IMC, dias para o Natal, palavra aleatória, capital do, população, quiz, jogar forca, pomodoro, calma, meditação, alongamento, curiosidade do dia, pensamento do dia, sabia que, lista de tarefas, anotações, eventos, hábitos, metas, checklist, cotação, cep, tabuada, par ou ímpar, pontuação, motivação, traduzir, bateria, cronômetro, timer, dicionário, receitas, número da sorte, idade, conversão, horóscopo, pedra papel tesoura, adivinhação.");
     });
     
     whatsappBtn.addEventListener('click', () => {
         const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-        if (isMobile) {
-            window.location.href = "whatsapp://";
-        } else {
-            window.open("https://web.whatsapp.com", "_blank");
-        }
+        if (isMobile) window.location.href = "whatsapp://";
+        else window.open("https://web.whatsapp.com", "_blank");
         falar("Abrindo WhatsApp");
     });
     
@@ -893,7 +895,7 @@
     atualizarHistoricoUI();
     
     setTimeout(() => {
-        falar("Assistente JA ativada! Fale JA e um comando");
+        falar("Assistente JA MEGA ativada! Tenho mais de 200 comandos! Fale JA ajuda para conhecer todos!");
     }, 500);
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>

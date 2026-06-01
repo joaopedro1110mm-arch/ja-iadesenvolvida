@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>JA Assistente Virtual</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Outfit', system-ui, sans-serif;
+            background: radial-gradient(circle at 20% 30%, #0a0a2a, #000000);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        /* Efeito de partículas sutis */
+        #particlesCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .assistant-card {
+            max-width: 700px;
+            width: 100%;
+            background: rgba(10, 20, 40, 0.65);
+            backdrop-filter: blur(16px);
+            border-radius: 48px;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
+            overflow: hidden;
+            z-index: 2;
+            transition: all 0.3s ease;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #00c6ff, #0072ff);
+            padding: 24px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            color: white;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            color: #e0f0ff;
+            margin-top: 6px;
+        }
+
+        .chat-area {
+            height: 380px;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            background: rgba(5, 10, 25, 0.5);
+        }
+
+        .message {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            animation: fadeSlide 0.3s ease;
+        }
+
+        @keyframes fadeSlide {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .user-message {
+            flex-direction: row-reverse;
+        }
+
+        .user-message .bubble {
+            background: linear-gradient(135deg, #00c6ff, #0072ff);
+            color: white;
+            border-radius: 24px 24px 4px 24px;
+        }
+
+        .bot-message .bubble {
+            background: rgba(20, 30, 55, 0.9);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            color: #e2f0ff;
+            border-radius: 24px 24px 24px 4px;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            background: #1e2a3a;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .user-message .avatar {
+            background: #d4ff00;
+            color: #000;
+        }
+
+        .bubble {
+            max-width: 75%;
+            padding: 12px 18px;
+            font-size: 0.95rem;
+            line-height: 1.45;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .controls {
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(12px);
+            border-top: 1px solid rgba(0, 255, 255, 0.2);
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        button {
+            background: linear-gradient(135deg, #00c6ff, #0072ff);
+            border: none;
+            color: white;
+            font-weight: bold;
+            padding: 12px 24px;
+            border-radius: 60px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+
+        button:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 15px #00c6ff;
+        }
+
+        .status {
+            font-size: 0.75rem;
+            text-align: center;
+            padding: 10px;
+            color: #88aaff;
+            border-top: 1px solid rgba(0,255,255,0.2);
+        }
+
+        .mic-active {
+            animation: pulseMic 1s infinite;
+        }
+
+        @keyframes pulseMic {
+            0% { box-shadow: 0 0 0 0 #d4ff00; }
+            100% { box-shadow: 0 0 0 10px rgba(212,255,0,0); }
+        }
+
+        @media (max-width: 550px) {
+            .assistant-card { margin: 10px; }
+            .bubble { max-width: 85%; font-size: 0.85rem; }
+            button { padding: 8px 16px; font-size: 0.75rem; }
+        }
+    </style>
+</head>
+<body>
+
+<canvas id="particlesCanvas"></canvas>
+
+<div class="assistant-card">
+    <div class="header">
+        <h1>🤖 JA ASSISTENTE</h1>
+        <p>Ativação por voz | Diga "JA" + comando</p>
+    </div>
+
+    <div class="chat-area" id="chatArea">
+        <div class="message bot-message">
+            <div class="avatar">JA</div>
+            <div class="bubble">Olá! Estou pronto. Fale "JA" e depois o comando, ou use os botões abaixo. 🎤</div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button id="micBtn">🎤 MICROFONE</button>
+        <button id="clearBtn">🗑️ LIMPAR</button>
+        <button id="helpBtn">❓ COMANDOS</button>
+    </div>
+    <div class="status" id="statusMsg">⚡ Aguardando ativação...</div>
+</div>
+
+<script>
+    // ==================== PARTÍCULAS ====================
+    const canvas = document.getElementById('particlesCanvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+
+    function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+
+    class Particle {
+        constructor() {
+            this.x = Math.random() * canvas.width;
+            this.y = Math.random() * canvas.height;
+            this.size = Math.random() * 3 + 1;
+            this.speedX = (Math.random() - 0.5) * 1;
+            this.speedY = (Math.random() - 0.5) * 1;
+            this.color = `hsl(${Math.random() * 40 + 180}, 80%, 60%)`;
+        }
+        update() {
+            this.x += this.speedX;
+            this.y += this.speedY;
+            if (this.x < 0) this.x = canvas.width;
+            if (this.x > canvas.width) this.x = 0;
+            if (this.y < 0) this.y = canvas.height;
+            if (this.y > canvas.height) this.y = 0;
+        }
+        draw() {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.fillStyle = this.color;
+            ctx.shadowBlur = 8;
+            ctx.shadowColor = '#0ff';
+            ctx.fill();
+        }
+    }
+
+    function initParticles() {
+        particles = [];
+        for (let i = 0; i < 100; i++) particles.push(new Particle());
+    }
+    function animateParticles() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particles.forEach(p => { p.update(); p.draw(); });
+        requestAnimationFrame(animateParticles);
+    }
+    window.addEventListener('resize', () => { resizeCanvas(); initParticles(); });
+    resizeCanvas(); initParticles(); animateParticles();
+
+    // ==================== ASSISTENTE WEB ====================
+    const chatArea = document.getElementById('chatArea');
+    const statusSpan = document.getElementById('statusMsg');
+    const micBtn = document.getElementById('micBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const helpBtn = document.getElementById('helpBtn');
+
+    let listening = false;
+    let recognition = null;
+    let ativado = false;
+    let comandoAtual = "";
+
+    // Suporte para Web Speech API
+    if ('webkitSpeechRecognition' in window) {
+        recognition = new webkitSpeechRecognition();
+        recognition.lang = 'pt-BR';
+        recognition.continuous = false;
+        recognition.interimResults = false;
+    } else {
+        statusSpan.innerText = "❌ Seu navegador não suporta reconhecimento de voz. Use Chrome/Edge.";
+        micBtn.disabled = true;
+    }
+
+    // Função para falar usando síntese de voz
+    function falar(texto) {
+        const utterance = new SpeechSynthesisUtterance(texto);
+        utterance.lang = 'pt-BR';
+        utterance.rate = 0.95;
+        utterance.pitch = 1;
+        window.speechSynthesis.cancel(); // limpa fila
+        window.speechSynthesis.speak(utterance);
+        addMessage(`JA: ${texto}`, false);
+    }
+
+    function addMessage(texto, isUser = true) {
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
+        msgDiv.innerHTML = `
+            <div class="avatar">${isUser ? 'VOCÊ' : 'JA'}</div>
+            <div class="bubble">${texto.replace(/JA: /, '')}</div>
+        `;
+        chatArea.appendChild(msgDiv);
+        msgDiv.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    }
+
+    function processarComando(comando) {
+        comando = comando.toLowerCase().trim();
+        console.log("Processando:", comando);
+
+        // Ativação por "JA" ou "já" ou "jota"
+        let cmd = comando;
+        let ativado = false;
+
+        const ativadores = ["ja", "já", "jota", "jotta", "assistente", "robo", "robô"];
+        for (let a of ativadores) {
+            if (cmd.startsWith(a)) {
+                cmd = cmd.replace(a, "").trim();
+                ativado = true;
+                break;
+            }
+        }
+        if (!ativado && cmd.length > 0) {
+            // fallback: primeira palavra começando com j/y/i
+            const primeira = cmd.split(' ')[0];
+            if (primeira && (primeira.startsWith('j') || primeira.startsWith('y') || primeira.startsWith('i'))) {
+                cmd = cmd.substring(primeira.length).trim();
+                ativado = true;
+            }
+        }
+        if (!ativado && cmd !== "") {
+            addMessage(`Comando ignorado. Diga "JA" antes.`, false);
+            return;
+        }
+        if (cmd === "") {
+            addMessage(`Diga algo após "JA"...`, false);
+            return;
+        }
+
+        // ========== COMANDOS ==========
+        if (cmd.includes("teste")) {
+            falar("Teste de voz funcionando perfeitamente!");
+        }
+        else if (cmd.includes("que horas são") || cmd.includes("horas")) {
+            const agora = new Date();
+            const horas = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            falar(`São ${horas}`);
+        }
+        else if (cmd.includes("data") || cmd.includes("hoje é")) {
+            const data = new Date().toLocaleDateString('pt-BR');
+            falar(`Hoje é ${data}`);
+        }
+        else if (cmd.includes("clima") || cmd.includes("tempo")) {
+            falar("Informe a cidade no microfone após o bipe.");
+            setTimeout(() => {
+                if (recognition) recognition.start();
+                statusSpan.innerText = "🎤 Diga o nome da cidade...";
+            }, 1000);
+            // será tratado no evento de resultado específico -> precisamos de estado
+            window.aguardandoCidade = true;
+            return;
+        }
+        else if (cmd.includes("youtube")) {
+            window.open("https://youtube.com", "_blank");
+            falar("Abrindo YouTube");
+        }
+        else if (cmd.includes("google")) {
+            window.open("https://google.com", "_blank");
+            falar("Abrindo Google");
+        }
+        else if (cmd.includes("pesquisar")) {
+            let busca = cmd.replace("pesquisar", "").trim();
+            if (busca === "") {
+                falar("O que você quer pesquisar?");
+                return;
+            }
+            window.open(`https://google.com/search?q=${encodeURIComponent(busca)}`, "_blank");
+            falar(`Pesquisando ${busca} no Google`);
+        }
+        else if (cmd.includes("olá") || cmd.includes("ola")) {
+            falar("Olá, tudo bem?");
+        }
+        else if (cmd.includes("bom dia")) {
+            falar("Bom dia! Tenha um ótimo dia.");
+        }
+        else if (cmd.includes("boa tarde")) {
+            falar("Boa tarde!");
+        }
+        else if (cmd.includes("boa noite")) {
+            falar("Boa noite, descanse bem.");
+        }
+        else if (cmd.includes("obrigado")) {
+            falar("De nada! Estou aqui para ajudar.");
+        }
+        else if (cmd.includes("tchau") || cmd.includes("adeus")) {
+            falar("Até logo! Ative novamente quando precisar.");
+        }
+        else if (cmd.includes("piada")) {
+            falar("Por que o computador foi ao médico? Porque ele estava com um vírus!");
+        }
+        else if (cmd.includes("cara ou coroa")) {
+            const res = Math.random() < 0.5 ? "cara" : "coroa";
+            falar(`Deu ${res}`);
+        }
+        else if (cmd.includes("rolar para baixo")) {
+            window.scrollBy(0, 300);
+            falar("Rolando para baixo");
+        }
+        else if (cmd.includes("rolar para cima")) {
+            window.scrollBy(0, -300);
+            falar("Rolando para cima");
+        }
+        else if (cmd.includes("tirar print")) {
+            // screenshot da página (canvas + html)
+            html2canvas(document.body).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `print_${Date.now()}.png`;
+                link.href = canvas.toDataURL();
+                link.click();
+                falar("Print da página salvo");
+            }).catch(() => falar("Não foi possível tirar print"));
+        }
+        else if (cmd.includes("fale")) {
+            let texto = cmd.replace("fale", "").trim();
+            if (texto) falar(texto);
+            else falar("Diga o que devo falar após 'fale'");
+        }
+        else if (cmd.includes("ajuda") || cmd.includes("comandos")) {
+            falar("Comandos: hora, data, clima, abrir YouTube, Google, pesquisar, rolar, piada, cara ou coroa, fale, tchau.");
+        }
+        else {
+            falar("Não entendi esse comando. Diga 'JA ajuda' para ver os comandos disponíveis.");
+        }
+    }
+
+    // Reconhecimento de voz principal
+    if (recognition) {
+        recognition.onstart = () => {
+            statusSpan.innerText = "🎤 Ouvindo... Fale o comando completo (incluindo JA)";
+            micBtn.classList.add('mic-active');
+        };
+        recognition.onend = () => {
+            micBtn.classList.remove('mic-active');
+            if (!window.aguardandoCidade) statusSpan.innerText = "⚡ Aguardando ativação...";
+        };
+        recognition.onresult = (event) => {
+            const transcript = event.results[0][0].transcript;
+            addMessage(transcript, true);
+            if (window.aguardandoCidade) {
+                window.aguardandoCidade = false;
+                const cidade = transcript;
+                fetch(`https://wttr.in/${cidade}?format=%C+%t+%w&lang=pt`)
+                    .then(res => res.text())
+                    .then(clima => {
+                        if (clima.includes("Unknown")) falar(`Não encontrei ${cidade}`);
+                        else falar(`Em ${cidade}: ${clima}`);
+                    })
+                    .catch(() => falar("Erro ao buscar clima"));
+                statusSpan.innerText = "⚡ Aguardando ativação...";
+                return;
+            }
+            processarComando(transcript);
+            statusSpan.innerText = "⚡ Processado. Pode falar outro comando.";
+        };
+        recognition.onerror = (e) => {
+            console.error(e);
+            statusSpan.innerText = "❌ Erro no microfone. Tente novamente.";
+            micBtn.classList.remove('mic-active');
+        };
+    }
+
+    micBtn.addEventListener('click', () => {
+        if (!recognition) return;
+        try {
+            recognition.start();
+        } catch(e) {
+            statusSpan.innerText = "Já está ouvindo ou erro de permissão.";
+        }
+    });
+
+    clearBtn.addEventListener('click', () => {
+        while (chatArea.children.length > 2) {
+            chatArea.removeChild(chatArea.lastChild);
+        }
+        falar("Conversa limpa!");
+    });
+
+    helpBtn.addEventListener('click', () => {
+        falar("Comandos: hora, data, clima, abrir YouTube, Google, pesquisar, rolar para baixo/cima, tirar print, piada, cara ou coroa, fale, tchau.");
+    });
+
+    // Clima com cidade - estado para aguardar
+    window.aguardandoCidade = false;
+
+    // síntese de voz inicial
+    window.speechSynthesis.cancel();
+    setTimeout(() => {
+        falar("Assistente JA ativado. Fale JA e um comando.");
+    }, 500);
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</body>
+</html>

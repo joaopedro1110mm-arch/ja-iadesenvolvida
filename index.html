@@ -22,7 +22,6 @@
             overflow-x: hidden;
         }
 
-        /* Efeito de partículas */
         #particlesCanvas {
             position: fixed;
             top: 0;
@@ -40,10 +39,9 @@
             backdrop-filter: blur(16px);
             border-radius: 48px;
             border: 1px solid rgba(0, 255, 255, 0.3);
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
             overflow: hidden;
             z-index: 2;
-            transition: all 0.3s ease;
         }
 
         .header {
@@ -56,7 +54,6 @@
             font-size: 2rem;
             font-weight: 800;
             color: white;
-            text-shadow: 0 2px 5px rgba(0,0,0,0.3);
         }
 
         .header p {
@@ -64,7 +61,6 @@
             margin-top: 6px;
         }
 
-        /* Histórico */
         .history-toggle {
             position: absolute;
             right: 20px;
@@ -201,7 +197,6 @@
             padding: 12px 18px;
             font-size: 0.95rem;
             line-height: 1.45;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
 
         .controls {
@@ -224,9 +219,6 @@
             border-radius: 60px;
             cursor: pointer;
             transition: all 0.2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
             font-size: 0.9rem;
         }
 
@@ -264,7 +256,6 @@
 
 <canvas id="particlesCanvas"></canvas>
 
-<!-- Painel de Histórico -->
 <div class="history-panel" id="historyPanel">
     <div class="history-header">
         <h3>📜 HISTÓRICO DE MENSAGENS</h3>
@@ -286,7 +277,7 @@
     <div class="chat-area" id="chatArea">
         <div class="message bot-message">
             <div class="avatar">JA</div>
-            <div class="bubble">Olá! Sou a JA, sua assistente pessoal. Fale "JA" e depois o comando, ou use os botões abaixo. 🎤</div>
+            <div class="bubble">Olá! Sou a JA, sua assistente pessoal. Fale "JA" e depois o comando! 🎤</div>
         </div>
     </div>
 
@@ -300,7 +291,7 @@
 </div>
 
 <script>
-    // ==================== PARTÍCULAS ====================
+    // Partículas
     const canvas = document.getElementById('particlesCanvas');
     const ctxParticles = canvas.getContext('2d');
     let particles = [];
@@ -349,7 +340,7 @@
     window.addEventListener('resize', () => { resizeCanvas(); initParticles(); });
     resizeCanvas(); initParticles(); animateParticles();
 
-    // ==================== ASSISTENTE ====================
+    // Assistente
     const chatArea = document.getElementById('chatArea');
     const statusSpan = document.getElementById('statusMsg');
     const micBtn = document.getElementById('micBtn');
@@ -367,7 +358,6 @@
     let aguardandoWhatsApp = false;
     let aguardandoLembrete = false;
     
-    // Histórico
     let historicoMensagens = JSON.parse(localStorage.getItem('ja_historico')) || [];
 
     function salvarHistorico() {
@@ -398,7 +388,6 @@
         `).join('');
     }
 
-    // Suporte Web Speech
     if ('webkitSpeechRecognition' in window) {
         recognition = new webkitSpeechRecognition();
         recognition.lang = 'pt-BR';
@@ -453,7 +442,6 @@
     function processarComando(comando) {
         comando = comando.toLowerCase().trim();
         
-        // Aguardando respostas de perguntas
         if (aguardandoCidade) {
             aguardandoCidade = false;
             fetch(`https://wttr.in/${encodeURIComponent(comando)}?format=%C+%t+%w&lang=pt`)
@@ -489,7 +477,6 @@
             return;
         }
         
-        // Ativação
         let cmd = comando;
         let ativado = false;
         const ativadores = ["ja", "já", "jotta", "jota", "assistente", "robô", "robo", "hey"];
@@ -517,12 +504,11 @@
             return;
         }
         
-        // ========== COMANDOS EXPANDIDOS ==========
+        // ========== COMANDOS ==========
         
-        // ========== WHATSAPP PARA CELULAR ==========
-        if (cmd.includes("abrir whatsapp") || cmd.includes("whatsapp web") || (cmd.includes("whatsapp") && !cmd.includes("para"))) {
+        // WhatsApp
+        if (cmd.includes("abrir whatsapp") || (cmd.includes("whatsapp") && !cmd.includes("para"))) {
             const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-            
             if (isMobile) {
                 window.location.href = "whatsapp://";
                 falar("Abrindo WhatsApp");
@@ -533,32 +519,19 @@
             return;
         }
         
-        // WhatsApp com mensagem
-        else if (cmd.includes("mensagem") || cmd.includes("zap") || cmd.includes("mandar") || cmd.includes("enviar") || cmd.includes("para")) {
+        else if (cmd.includes("mensagem") || cmd.includes("zap") || cmd.includes("mandar") || cmd.includes("para")) {
             if (cmd.includes("para")) {
                 const partes = cmd.split("para");
-                let mensagem = partes[0].replace("mandar", "").replace("mensagem", "").replace("whatsapp", "").replace("zap", "").replace("enviar", "").trim();
+                let mensagem = partes[0].replace("mandar", "").replace("mensagem", "").replace("whatsapp", "").replace("zap", "").trim();
                 let contato = partes[1].trim();
                 if (mensagem === "") mensagem = "Olá!";
-                
-                const contatos = {
-                    "mãe": "5511999999999",
-                    "mae": "5511999999999",
-                    "pai": "5511888888888"
-                };
-                
-                let numero = contatos[contato.toLowerCase()];
-                if (numero) {
-                    window.open(`https://wa.me/${numero}?text=${encodeURIComponent(mensagem)}`, "_blank");
-                    falar(`Enviando para ${contato}`);
-                } else {
-                    falar(`Contato ${contato} não encontrado. Use: mãe ou pai`);
-                }
+                window.open(`https://web.whatsapp.com`, "_blank");
+                navigator.clipboard.writeText(mensagem);
+                falar(`Mensagem "${mensagem}" copiada! Cole no WhatsApp para ${contato}`);
                 return;
             }
             falar("Diga a mensagem e depois 'para' e o contato. Exemplo: oi para mãe");
             aguardandoWhatsApp = true;
-            statusSpan.innerText = "📱 Diga: mensagem para contato";
             return;
         }
         
@@ -588,12 +561,11 @@
         else if (cmd.includes("clima") || cmd.includes("tempo")) {
             falar("Diga o nome da cidade");
             aguardandoCidade = true;
-            statusSpan.innerText = "🌡️ Diga o nome da cidade...";
             return;
         }
         
-        // Música (YouTube Music)
-        else if (cmd.includes("tocar música") || cmd.includes("tocar") && cmd.includes("musica")) {
+        // Música
+        else if (cmd.includes("tocar música") || (cmd.includes("tocar") && cmd.includes("musica"))) {
             let musica = cmd.replace("tocar música", "").replace("tocar", "").trim();
             if (musica === "") falar("Diga o nome da música");
             else {
@@ -610,22 +582,20 @@
                 let resultado = eval(expressao);
                 falar(`O resultado de ${expressao} é ${resultado}`);
             } catch(e) {
-                falar("Não consegui calcular essa expressão");
+                falar("Não consegui calcular");
             }
             return;
         }
         
-        // Moedas (cara ou coroa)
+        // Cara ou coroa
         else if (cmd.includes("cara ou coroa")) {
-            const resultado = Math.random() < 0.5 ? "cara" : "coroa";
-            falar(`Deu ${resultado}`);
+            falar(Math.random() < 0.5 ? "Deu cara" : "Deu coroa");
             return;
         }
         
-        // Jogar dado
-        else if (cmd.includes("dado") || cmd.includes("jogar dado")) {
-            const numero = Math.floor(Math.random() * 6) + 1;
-            falar(`O dado parou no ${numero}`);
+        // Dado
+        else if (cmd.includes("jogar dado") || cmd.includes("dado")) {
+            falar(`O dado parou no ${Math.floor(Math.random() * 6) + 1}`);
             return;
         }
         
@@ -634,8 +604,7 @@
             const piadas = [
                 "Por que o computador foi ao médico? Porque estava com vírus!",
                 "Qual é o animal mais velho do mundo? A zebra, porque ainda é preta e branca!",
-                "O que o pato disse para a pata? Viemos aqui para QUÁ!",
-                "Por que o HTML não foi à festa? Porque ele não tinha CLASS!"
+                "O que o pato disse para a pata? Viemos aqui para QUÁ!"
             ];
             falar(piadas[Math.floor(Math.random() * piadas.length)]);
             return;
@@ -646,15 +615,14 @@
             const curiosidades = [
                 "O primeiro computador pesava mais de 27 toneladas!",
                 "O Python foi nomeado por causa do Monty Python, não da cobra.",
-                "O Android foi criado para câmeras digitais antes de ser comprado pelo Google.",
-                "O primeiro programa de computador foi escrito por uma mulher, Ada Lovelace."
+                "O Android foi criado para câmeras digitais antes de ser comprado pelo Google."
             ];
             falar(curiosidades[Math.floor(Math.random() * curiosidades.length)]);
             return;
         }
         
         // Navegação
-        else if (cmd.includes("youtube") || cmd.includes("tube")) {
+        else if (cmd.includes("youtube")) {
             window.open("https://youtube.com", "_blank");
             falar("Abrindo YouTube");
         }
@@ -682,56 +650,83 @@
         // Pesquisar
         else if (cmd.includes("pesquisar") || cmd.includes("buscar")) {
             let busca = cmd.replace("pesquisar", "").replace("buscar", "").trim();
-            if (busca === "") falar("O que você quer pesquisar?");
+            if (busca === "") falar("O que quer pesquisar?");
             else {
                 window.open(`https://google.com/search?q=${encodeURIComponent(busca)}`, "_blank");
                 falar(`Pesquisando ${busca} no Google`);
             }
+            return;
         }
         
         // Notícias
         else if (cmd.includes("notícias") || cmd.includes("noticias")) {
             window.open("https://news.google.com", "_blank");
             falar("Abrindo as últimas notícias");
+            return;
         }
         
-        // Hora e Data
+        // Hora
         else if (cmd.includes("que horas são") || cmd.includes("horas")) {
-            const agora = new Date();
-            falar(`São ${agora.toLocaleTimeString('pt-BR')}`);
+            falar(`São ${new Date().toLocaleTimeString('pt-BR')}`);
+            return;
         }
+        
+        // Data
         else if (cmd.includes("data") || cmd.includes("hoje é")) {
             falar(`Hoje é ${new Date().toLocaleDateString('pt-BR')}`);
+            return;
         }
         
-        // Saudação
+        // Valor de Pi (π)
+        else if (cmd.includes("valor de pi") || cmd.includes("pi") && cmd.includes("valor") || cmd.includes("π")) {
+            const pi = Math.PI;
+            falar(`O valor de Pi é aproximadamente ${pi.toFixed(10)}. Pi é uma constante matemática que representa a razão entre a circunferência de um círculo e seu diâmetro.`);
+            return;
+        }
+        
+        // Python
+        else if (cmd.includes("python") || cmd.includes("py")) {
+            const resposta = "Python é uma linguagem de programação de alto nível, interpretada e de código aberto. Criada por Guido van Rossum em 1991. Características: sintaxe simples e legível, tipagem dinâmica, suporta múltiplos paradigmas (orientação a objetos, funcional, procedural). É amplamente usada em: desenvolvimento web (Django, Flask), ciência de dados (pandas, numpy), inteligência artificial (tensorflow, pytorch), automação, scripts, jogos. Uma das linguagens mais populares do mundo!";
+            falar(resposta);
+            return;
+        }
+        
+        // Saudações
         else if (cmd.includes("olá") || cmd.includes("ola")) {
             falar("Olá! Como posso ajudar?");
+            return;
         }
         else if (cmd.includes("bom dia")) {
             falar("Bom dia! Tenha um excelente dia!");
+            return;
         }
         else if (cmd.includes("boa tarde")) {
             falar("Boa tarde! Como posso auxiliar?");
+            return;
         }
         else if (cmd.includes("boa noite")) {
             falar("Boa noite! Descanse bem.");
+            return;
         }
         else if (cmd.includes("obrigado") || cmd.includes("obrigada")) {
             falar("De nada! Estou aqui para ajudar.");
+            return;
         }
         else if (cmd.includes("tchau") || cmd.includes("adeus") || cmd.includes("até logo")) {
             falar("Até logo! Quando precisar, é só chamar.");
+            return;
         }
         
         // Rolagem
         else if (cmd.includes("rolar para baixo")) {
             window.scrollBy(0, 400);
             falar("Rolando para baixo");
+            return;
         }
         else if (cmd.includes("rolar para cima")) {
             window.scrollBy(0, -400);
             falar("Rolando para cima");
+            return;
         }
         
         // Print
@@ -747,6 +742,7 @@
             } else {
                 falar("Biblioteca de print não carregada");
             }
+            return;
         }
         
         // Fale
@@ -754,90 +750,75 @@
             let texto = cmd.replace("fale", "").trim();
             if (texto) falar(texto);
             else falar("Diga o que devo falar após 'fale'");
-        }
-        
-        // ========== CADEIA DE SUPRIMENTOS ==========
-        else if (cmd.includes("o que é cadeia de suprimentos") || 
-                 cmd.includes("cadeia de suprimentos") || 
-                 cmd.includes("supply chain") ||
-                 cmd.includes("o que é supply chain")) {
-            
-            const resposta = `Cadeia de suprimentos é o conjunto de todos os processos envolvidos na produção e distribuição de um produto ou serviço, desde a obtenção da matéria-prima até a entrega ao consumidor final.
-
-Os elos da cadeia são:
-1️⃣ Fornecedor - fornece matéria-prima ou componentes
-2️⃣ Produção - fabrica o produto
-3️⃣ Armazenagem - guarda o produto pronto
-4️⃣ Transporte - leva o produto até o cliente
-5️⃣ Cliente final - recebe o produto
-
-Diferença importante: Cadeia de Suprimentos é o todo (fornecedor até cliente). Logística é uma parte (transporte e armazenagem).
-
-O objetivo principal é: produto certo, no lugar certo, na hora certa, com o menor custo possível.`;
-            
-            falar(resposta);
             return;
         }
         
-        // ========== SCMS (SISTEMA DE GESTÃO DE CADEIA DE SUPRIMENTOS) ==========
-        else if (cmd.includes("scms") || 
-                 cmd.includes("o que é scms") || 
-                 cmd.includes("sistema de gestão de cadeia de suprimentos") ||
-                 cmd.includes("supply chain management system")) {
-            
-            const resposta = `SCMS significa Sistema de Gestão de Cadeia de Suprimentos (Supply Chain Management System).
-
-É um sistema de software que integra e automatiza todos os processos da cadeia de suprimentos, incluindo:
-
-📊 PRINCIPAIS FUNÇÕES DO SCMS:
-1️⃣ Planejamento de demanda - prevê o que os clientes vão comprar
-2️⃣ Gestão de fornecedores - controla compras e contratos
-3️⃣ Controle de estoque - evita falta ou excesso de produtos
-4️⃣ Gestão de transporte - otimiza rotas e fretes
-5️⃣ Rastreamento de pedidos - acompanha do pedido à entrega
-6️⃣ Análise de desempenho - métricas e KPIs
-
-🎯 BENEFÍCIOS DO SCMS:
-✅ Redução de custos operacionais
-✅ Maior visibilidade da cadeia
-✅ Tomada de decisão baseada em dados
-✅ Redução de erros manuais
-✅ Melhora no atendimento ao cliente
-
-Exemplos de SCMS no mercado: SAP SCM, Oracle SCM, BlueYonder, Microsoft Dynamics 365 Supply Chain Management.`;
-            
-            falar(resposta);
+        // ========== ESTUDOS ==========
+        
+        // Cadeia de Suprimentos
+        else if (cmd.includes("cadeia de suprimentos") || cmd.includes("supply chain")) {
+            falar("Cadeia de suprimentos é o conjunto de processos de produção e distribuição, desde matéria-prima até o cliente final. Os elos são: fornecedor, produção, armazenagem, transporte e cliente. Objetivo: produto certo, no lugar certo, na hora certa, com menor custo.");
             return;
         }
         
-        // Ajuda
-        else if (cmd.includes("ajuda") || cmd.includes("comandos") || cmd.includes("o que você faz")) {
-            const comandosLista = [
-                "📋 COMANDOS DISPONÍVEIS:",
-                "🎤 hora, data, clima (depois a cidade)",
-                "📱 whatsapp + mensagem + para + contato",
-                "📝 lembrar (depois o lembrete), meus lembretes",
-                "🎵 tocar música + nome",
-                "🎲 cara ou coroa, jogar dado",
-                "😂 piada, curiosidade",
-                "🔍 pesquisar + assunto, notícias",
-                "📧 abrir youtube, google, gmail, spotify, netflix, github",
-                "📸 print, rolar para cima/baixo",
-                "📦 o que é cadeia de suprimentos, supply chain",
-                "⚙️ o que é SCMS, sistema de gestão de cadeia de suprimentos",
-                "❓ ajuda, tchau, obrigado, quem te criou, como você está"
-            ];
-            falar(comandosLista.join(". "));
+        // SCMS
+        else if (cmd.includes("scms")) {
+            falar("SCMS é Sistema de Gestão de Cadeia de Suprimentos. É um software que integra planejamento, fornecedores, estoque, transporte e rastreamento. Exemplos: SAP SCM, Oracle SCM.");
+            return;
+        }
+        
+        // MRP
+        else if (cmd.includes("mrp")) {
+            falar("MRP significa Material Requirements Planning ou Planejamento de Necessidades de Materiais. É um sistema que calcula quais materiais são necessários, em que quantidade e quando comprar ou produzir. Benefícios: reduz custos de estoque e evita falta de materiais.");
+            return;
+        }
+        
+        // PDTI
+        else if (cmd.includes("pdti")) {
+            falar("PDTI significa Plano de Desenvolvimento Tecnológico Individual. É um documento usado em programas de inovação e bolsas de pesquisa como CNPq, FAPESP, Finep e Embrapii. Contém objetivos, cronograma, metas, recursos, metodologia e resultados esperados.");
+            return;
+        }
+        
+        // WMS
+        else if (cmd.includes("wms")) {
+            falar("WMS significa Warehouse Management System, Sistema de Gerenciamento de Armazém. Controla recebimento, armazenagem, separação de pedidos e expedição. Benefícios: aumenta precisão do estoque, reduz custos e otimiza espaço. Exemplos: SAP EWM, Oracle WMS, VTEX WMS.");
+            return;
+        }
+        
+        // TMS
+        else if (cmd.includes("tms")) {
+            falar("TMS significa Transportation Management System, Sistema de Gerenciamento de Transporte. Planeja, executa e otimiza o transporte de mercadorias. Funções: roteirização, gestão de fretes, rastreamento. Benefícios: reduz custos de frete e melhora prazos. Exemplos: SAP TM, Oracle TMS, Truckpad, Fretebras.");
+            return;
+        }
+        
+        // PRM
+        else if (cmd.includes("prm")) {
+            falar("PRM significa Plano de Recursos Minerais. Documento obrigatório na mineração brasileira que planeja a extração sustentável de recursos minerais. Contém caracterização da jazida, métodos de lavra, beneficiamento, recuperação ambiental. Aprovado pela ANM.");
+            return;
+        }
+        
+        // CRM
+        else if (cmd.includes("crm")) {
+            falar("CRM significa Customer Relationship Management, Gestão de Relacionamento com o Cliente. Sistema que gerencia interações com clientes, vendas, marketing e suporte. Exemplos: Salesforce, RD Station, HubSpot.");
+            return;
         }
         
         // Criador
         else if (cmd.includes("quem te criou") || cmd.includes("criador")) {
             falar("Fui criada pelo João Altafini, um programador brasileiro!");
+            return;
         }
         
         // Como está
         else if (cmd.includes("como você está")) {
             falar("Estou online e funcionando! Pronta para ajudar.");
+            return;
+        }
+        
+        // Ajuda
+        else if (cmd.includes("ajuda") || cmd.includes("comandos")) {
+            falar("Comandos: hora, data, clima, tocar música, calcular, valor de pi, python, cara ou coroa, dado, piada, curiosidade, pesquisar, abrir youtube, google, spotify, netflix, gmail, github, print, rolar, fale, cadeia de suprimentos, SCMS, MRP, PDTI, WMS, TMS, PRM, CRM, lembrete, whatsapp, tchau, obrigado, quem te criou, como você está.");
+            return;
         }
         
         // Fallback
@@ -846,7 +827,6 @@ Exemplos de SCMS no mercado: SAP SCM, Oracle SCM, BlueYonder, Microsoft Dynamics
         }
     }
     
-    // Reconhecimento de voz
     if (recognition) {
         recognition.onstart = () => {
             statusSpan.innerText = "🎤 Ouvindo... Fale o comando";
@@ -883,18 +863,17 @@ Exemplos de SCMS no mercado: SAP SCM, Oracle SCM, BlueYonder, Microsoft Dynamics
     });
     
     helpBtn.addEventListener('click', () => {
-        falar("Comandos: hora, data, clima, pesquisar, tocar música, lembrete, whatsapp, piada, curiosidade, cara ou coroa, dado, abrir youtube, google, spotify, netflix, gmail, github, print, rolar, fale, cadeia de suprimentos, SCMS, tchau, obrigado, quem te criou, como você está. Diga JA ajuda para mais detalhes");
+        falar("Comandos: hora, data, clima, tocar música, calcular, valor de pi, python, cara ou coroa, dado, piada, curiosidade, pesquisar, abrir youtube, google, spotify, netflix, gmail, github, print, rolar, fale, cadeia de suprimentos, SCMS, MRP, PDTI, WMS, TMS, PRM, CRM, lembrete, whatsapp, tchau, obrigado, quem te criou, como você está.");
     });
     
     whatsappBtn.addEventListener('click', () => {
         const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
         if (isMobile) {
             window.location.href = "whatsapp://";
-            falar("Abrindo WhatsApp");
         } else {
             window.open("https://web.whatsapp.com", "_blank");
-            falar("Abrindo WhatsApp Web");
         }
+        falar("Abrindo WhatsApp");
     });
     
     historyToggle.addEventListener('click', () => {
@@ -913,7 +892,6 @@ Exemplos de SCMS no mercado: SAP SCM, Oracle SCM, BlueYonder, Microsoft Dynamics
     
     atualizarHistoricoUI();
     
-    // Boas-vindas
     setTimeout(() => {
         falar("Assistente JA ativada! Fale JA e um comando");
     }, 500);
